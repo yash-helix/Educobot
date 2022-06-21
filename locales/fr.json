@@ -1,0 +1,11 @@
+{
+  "demo": {
+    "title": "France",
+    "introduction": "hello france"
+  },
+  "common": {
+    "contactUs": "Nous contacter",
+    "back": "Arrière",
+    "go": "Aller"
+  }
+}

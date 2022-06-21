@@ -1,0 +1,11 @@
+{
+    "demo": {
+        "title": "Spanish",
+        "introduction": "hello spanish"
+    },
+    "common": {
+        "contactUs": "Contact us",
+        "back": "Back",
+        "go": "Go"
+    }
+}

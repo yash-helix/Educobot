@@ -1,0 +1,289 @@
+import { m } from 'framer-motion';
+// @mui
+import { useTheme, styled } from '@mui/material/styles';
+import {
+    Box,
+    Grid,
+    Card,
+    Link,
+    Stack,
+    Button,
+    Divider,
+    Container,
+    Typography,
+} from '@mui/material';
+// _mock_
+//import { _homePlans } from '../../_mock';
+const LICENSES = ['Standard', 'Standard Plus', 'Extended'];
+
+const _homePlans = [...Array(3)].map((_, index) => ({
+    license: LICENSES[index],
+    commons: ['One end products', '12 months updates', '6 months of support'],
+    options: [
+        'JavaScript version',
+        'TypeScript version',
+        'Design Resources',
+        'Commercial applications',
+    ],
+    icons: [
+        'https://minimal-assets-api.vercel.app/assets/images/home/ic_sketch.svg',
+        'https://minimal-assets-api.vercel.app/assets/images/home/ic_figma.svg',
+        'https://minimal-assets-api.vercel.app/assets/images/home/ic_js.svg',
+        'https://minimal-assets-api.vercel.app/assets/images/home/ic_ts.svg',
+    ],
+}));
+
+export const _pricingPlans = [
+    {
+        subscription: 'basic',
+        icon: <PlanFreeIcon />,
+        price: 0,
+        caption: 'forever',
+        lists: [
+            { text: '3 prototypes', isAvailable: true },
+            { text: '3 boards', isAvailable: true },
+            { text: 'Up to 5 team members', isAvailable: false },
+            { text: 'Advanced security', isAvailable: false },
+            { text: 'Permissions & workflows', isAvailable: false },
+        ],
+        labelAction: 'current plan',
+    },
+    {
+        subscription: 'starter',
+        icon: <PlanStarterIcon />,
+        price: 4.99,
+        caption: 'saving $24 a year',
+        lists: [
+            { text: '3 prototypes', isAvailable: true },
+            { text: '3 boards', isAvailable: true },
+            { text: 'Up to 5 team members', isAvailable: true },
+            { text: 'Advanced security', isAvailable: false },
+            { text: 'Permissions & workflows', isAvailable: false },
+        ],
+        labelAction: 'choose starter',
+    },
+    {
+        subscription: 'premium',
+        icon: <PlanPremiumIcon />,
+        price: 9.99,
+        caption: 'saving $124 a year',
+        lists: [
+            { text: '3 prototypes', isAvailable: true },
+            { text: '3 boards', isAvailable: true },
+            { text: 'Up to 5 team members', isAvailable: true },
+            { text: 'Advanced security', isAvailable: true },
+            { text: 'Permissions & workflows', isAvailable: true },
+        ],
+        labelAction: 'choose premium',
+    },
+];
+
+// components
+import Image from '../components/Image';
+import Iconify from '../components/Iconify';
+import { varFade, MotionViewport } from '../components/animate';
+import { PlanFreeIcon, PlanPremiumIcon, PlanStarterIcon } from '../assets';
+import Layout from '../layouts';
+
+// ----------------------------------------------------------------------
+
+const RootStyle = styled('div')(({ theme }) => ({
+    padding: theme.spacing(10, 0),
+    backgroundColor: theme.palette.background.neutral,
+    [theme.breakpoints.up('md')]: {
+        padding: theme.spacing(15, 0),
+    },
+}));
+
+// ----------------------------------------------------------------------
+Curriculum.getLayout = function getLayout(page: React.ReactElement) {
+    return <Layout variant="main">{page}</Layout>;
+};
+export default function Curriculum() {
+    const theme = useTheme();
+
+    const isLight = theme.palette.mode === 'light';
+
+    return (
+
+        <RootStyle>
+            <Container component={MotionViewport}>
+                <Box sx={{ mb: 10, textAlign: 'center' }}>
+                    <m.div variants={varFade().inUp}>
+                        <Typography component="div" variant="overline" sx={{ mb: 2, color: 'text.disabled' }}>
+                            CURRICULUM
+                        </Typography>
+                    </m.div>
+                    <m.div variants={varFade().inDown}>
+                        <Typography variant="h2" sx={{ mb: 3 }}>
+                            Your journey from no code to data science
+                        </Typography>
+                    </m.div>
+                    <m.div variants={varFade().inDown}>
+                        <Typography
+                            sx={{
+                                color: isLight ? 'text.secondary' : 'text.primary',
+                            }}
+                        >
+                            Choose a level to get started. You can change this anytime
+                        </Typography>
+                    </m.div>
+                </Box>
+
+                <Grid container spacing={5}>
+                    {_homePlans.map((plan: any) => (
+                        <Grid key={plan.license} item xs={12} md={4}>
+                            <m.div
+                                variants={plan.license === 'Standard Plus' ? varFade().inDown : varFade().inUp}
+                            >
+                                <PlanCard plan={plan} />
+                            </m.div>
+                        </Grid>
+                    ))}
+                </Grid>
+
+                <m.div variants={varFade().in}>
+                    <Box sx={{ p: 5, mt: 10, textAlign: 'center' }}>
+                        <m.div variants={varFade().inDown}>
+                            <Typography variant="h3"> School or Corporate</Typography>
+                        </m.div>
+
+                        <m.div variants={varFade().inDown}>
+                            <Typography sx={{ mt: 3, mb: 5, color: 'text.secondary' }}>
+                                Please contact us with your details to know how we could deploy the curriculum at school level.
+                            </Typography>
+                        </m.div>
+
+                        <m.div variants={varFade().inUp}>
+                            <Button
+                                size="large"
+                                variant="outlined"
+                                href="/contact-us"
+                            >
+                                Contact us
+                            </Button>
+                        </m.div>
+                    </Box>
+                </m.div>
+            </Container>
+        </RootStyle>
+    );
+}
+
+// ----------------------------------------------------------------------
+
+type PlanCardProps = {
+    plan: {
+        license: string;
+        commons: string[];
+        options: string[];
+        icons: string[];
+    };
+};
+
+function PlanCard({ plan }: PlanCardProps) {
+    const { license, commons, options, icons } = plan;
+
+    const standard = license === 'Standard';
+    const plus = license === 'Standard Plus';
+
+    return (
+        <Card
+            sx={{
+                p: 5,
+                boxShadow: 0,
+                ...(plus && {
+                    boxShadow: (theme) => theme.customShadows.z24,
+                }),
+            }}
+        >
+            <Stack spacing={5}>
+                <div>
+                    <Typography variant="overline" component="div" sx={{ mb: 2, color: 'text.disabled' }}>
+                        LICENSE
+                    </Typography>
+                    <Typography variant="h4">{license}</Typography>
+                </div>
+
+                {standard ? (
+                    <Image alt="package" src={icons[2]} sx={{ width: 40, height: 40 }} />
+                ) : (
+                    <Stack direction="row" spacing={1}>
+                        {icons.map((icon) => (
+                            <Image key={icon} alt="package" src={icon} sx={{ width: 40, height: 40 }} />
+                        ))}
+                    </Stack>
+                )}
+
+                <Stack spacing={2.5}>
+                    {commons.map((option) => (
+                        <Stack key={option} spacing={1.5} direction="row" alignItems="center">
+                            <Iconify
+                                icon={'eva:checkmark-fill'}
+                                sx={{ color: 'primary.main', width: 20, height: 20 }}
+                            />
+                            <Typography variant="body2">{option}</Typography>
+                        </Stack>
+                    ))}
+
+                    <Divider sx={{ borderStyle: 'dashed' }} />
+
+                    {options.map((option, optionIndex) => {
+                        const disabledLine =
+                            (standard && optionIndex === 1) ||
+                            (standard && optionIndex === 2) ||
+                            (standard && optionIndex === 3) ||
+                            (plus && optionIndex === 3);
+
+                        return (
+                            <Stack
+                                spacing={1.5}
+                                direction="row"
+                                alignItems="center"
+                                sx={{
+                                    ...(disabledLine && { color: 'text.disabled' }),
+                                }}
+                                key={option}
+                            >
+                                <Iconify
+                                    icon={'eva:checkmark-fill'}
+                                    sx={{
+                                        width: 20,
+                                        height: 20,
+                                        color: 'primary.main',
+                                        ...(disabledLine && { color: 'text.disabled' }),
+                                    }}
+                                />
+                                <Typography variant="body2">{option}</Typography>
+                            </Stack>
+                        );
+                    })}
+                </Stack>
+
+                <Stack direction="row" justifyContent="flex-end">
+                    <Link
+                        color="text.secondary"
+                        underline="always"
+                        target="_blank"
+                        rel="noopener"
+                        href="https://material-ui.com/store/license/#i-standard-license"
+                        sx={{ typography: 'body2', display: 'flex', alignItems: 'center' }}
+                    >
+                        Learn more <Iconify icon={'eva:chevron-right-fill'} width={20} height={20} />
+                    </Link>
+                </Stack>
+
+                <Button
+                    size="large"
+                    fullWidth
+                    variant={plus ? 'contained' : 'outlined'}
+                    target="_blank"
+                    rel="noopener"
+                    href="https://material-ui.com/store/items/minimal-dashboard/"
+                >
+                    Choose Plan
+                </Button>
+            </Stack>
+        </Card>
+    );
+}

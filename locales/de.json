@@ -1,0 +1,12 @@
+{
+  "demo": {
+    "title": "German",
+    "introduction": "hello german"
+  },
+  "common": {
+    "contactUs": "kontaktiere uns",
+    "back": "Zurück",
+    "go": "gehen"
+  },
+  "translation": "Hello <1>Gernman</1>"
+}

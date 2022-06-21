@@ -1,0 +1,11 @@
+{
+    "demo": {
+        "title": "Hindi",
+        "introduction": "hello hindi"
+    },
+    "common": {
+        "contactUs": "संपर्क करें",
+        "back": "जाये",
+        "go": "वापस"
+    }
+}
