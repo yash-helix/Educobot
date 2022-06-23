@@ -77,7 +77,7 @@ const RewardsComponent = () => {
 
   return (
     <RootStyle>
-      <Container sx={{ padding: 0 }}>
+      {/* <Container sx={{ padding: 0 }}> */}
         <Stack
           direction={{ xs: "column", sm: "row" }}
           justifyContent="space-between"
@@ -110,9 +110,10 @@ const RewardsComponent = () => {
         {/* badges */}
         <Stack
           direction={"row"}
-          justifyContent="center"
+          justifyContent="start"
           flexWrap={"wrap"}
           mt={5}
+          px={1}
         >
           <Stack
             direction={"row"}
@@ -154,6 +155,7 @@ const RewardsComponent = () => {
                   alignItems="center"
                   spacing={1}
                   key={i}
+                  mx={1}
                 >
                   {badge.icon}
                   <IconRotate />
@@ -165,7 +167,7 @@ const RewardsComponent = () => {
             })}
           </Stack>
         </Stack>
-      </Container>
+      {/* </Container> */}
     </RootStyle>
   );
 };

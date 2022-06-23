@@ -49,7 +49,7 @@ const StyledCardHeader = styled(CardHeader)(({ theme }) => ({
 export default function AchievementCard(props: ChartAreaProps) {
   const { title, CHART_DATA } = props.card;
   const theme = useTheme();
-  const [seriesData, setSeriesData] = useState("Current Year");
+  const [seriesData, setSeriesData] = useState("Last Week");
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [isOpen, setOpen] = useState<null | HTMLElement>(null);
 

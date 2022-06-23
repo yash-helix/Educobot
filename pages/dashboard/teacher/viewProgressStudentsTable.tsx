@@ -204,12 +204,12 @@ export default function ProgressStudentList(props) {
 ]);
 
   const [filterName, setFilterName] = useState("");
-
   const [filterClass, setFilterClass] = useState("all");
   const [filterDivision, setFilterDivision] = useState("all");
-
-  const { currentTab: filterStatus, onChangeTab: onChangeFilterStatus } =
-    useTabs("all");
+  const [filterStatus ,setFilterStatus] = useState("all");
+  // const [filterCourse, setFilterCourse] = useState("all");
+  
+  const { currentTab: filterCourse, onChangeTab: onChangeFilterCourse } = useTabs("all");
 
   const handleFilterName = (filterName: string) => {
     setFilterName(filterName);
@@ -223,6 +223,11 @@ export default function ProgressStudentList(props) {
   const handleFilterDivision = (event: React.ChangeEvent<HTMLInputElement>) => {
     setFilterDivision(event.target.value);
   };
+
+  // const handleFilterCourse = (tab)=>{
+  //   console.log(tab)
+  //   setFilterCourse(tab.value);
+  // }
 
   const handleDeleteRow = (id: string) => {
     const deleteRow = tableData.filter((row) => row.id !== id);
@@ -247,6 +252,7 @@ export default function ProgressStudentList(props) {
     filterClass,
     filterDivision,
     filterStatus,
+    filterCourse,
   });
 
   const denseHeight = dense ? 52 : 72;
@@ -255,7 +261,8 @@ export default function ProgressStudentList(props) {
     (!dataFiltered.length && !!filterName) ||
     (!dataFiltered.length && !!filterClass) ||
     (!dataFiltered.length && !!filterDivision) ||
-    (!dataFiltered.length && !!filterStatus);
+    (!dataFiltered.length && !!filterStatus) ||
+    (!dataFiltered.length && !!filterCourse);
 
   const getLengthByStatus = (status: number) =>
     tableData.filter((item) => item.status === status).length;
@@ -300,8 +307,8 @@ export default function ProgressStudentList(props) {
             allowScrollButtonsMobile
             variant="scrollable"
             scrollButtons="auto"
-            value={filterStatus}
-            onChange={onChangeFilterStatus}
+            value={filterCourse}
+            onChange={onChangeFilterCourse}
             sx={{ px: 2, bgcolor: "background.neutral" }}
           >
             {TABS.map((tab, index) => (
@@ -439,6 +446,7 @@ function applySortFilter({
   filterStatus,
   filterClass,
   filterDivision,
+  filterCourse,
 }: {
   tableData: row[];
   comparator: (a: any, b: any) => number;
@@ -446,6 +454,7 @@ function applySortFilter({
   filterStatus: string;
   filterClass: string;
   filterDivision: string;
+  filterCourse: string;
 }) {
   const stabilizedThis = tableData.map((el, index) => [el, index] as const);
 
@@ -482,5 +491,11 @@ function applySortFilter({
     );
   }
 
+  if (filterCourse !== "all") {
+    tableData = tableData.filter(
+      (item: Record<string, any>) => item.status == filterCourse
+    );
+  }
+  // item.status == filterCourse
   return tableData;
 }

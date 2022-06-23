@@ -27,6 +27,7 @@ import NavbarDocs from "./NavbarDocs";
 import NavbarAccount from "./NavbarAccount";
 import CollapseButton from "./CollapseButton";
 import useAuth from "../../../hooks/useAuth";
+import IconHamburger from "../../../assets/IconHamburger";
 
 // ----------------------------------------------------------------------
 
@@ -118,6 +119,8 @@ export default function NavbarVertical({
           justifyContent="space-between"
         >
           {/* needs to be small when collapse */}
+          {/* IconHamburger */}
+          {/* CollapseButton */}
           <Logo />
           {isDesktop && !isCollapse && (
             <CollapseButton

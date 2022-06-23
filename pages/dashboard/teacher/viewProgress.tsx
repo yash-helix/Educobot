@@ -284,16 +284,16 @@ export default function ViewProgress() {
                     {
                         data.map((student, i)=>{
                             if(student.status==1){
-                                return <StudentComp UserIcon={<UserGreen width={100} height={100}/>} student={student}/>
+                                return <UserIcon UserIcon={<UserGreen width={100} height={100}/>} student={student}/>
                             }
                             else if(student.status==2){
-                                return <StudentComp UserIcon={<UserYellow width={100} height={100}/>} student={student}/>
+                                return <UserIcon UserIcon={<UserYellow width={100} height={100}/>} student={student}/>
                             }
                             else if(student.status==3){
-                                return <StudentComp UserIcon={<UserGrey width={100} height={100}/>} student={student}/>
+                                return <UserIcon UserIcon={<UserGrey width={100} height={100}/>} student={student}/>
                             }
                             else{
-                                return <StudentComp UserIcon={<UserRed width={100} height={100}/>} student={student}/>
+                                return <UserIcon UserIcon={<UserRed width={100} height={100}/>} student={student}/>
                             }
                         })
                     }
@@ -313,7 +313,7 @@ type PropTypes = {
     student:{status:number, roll:string},
 }
 
-const StudentComp : React.FC<PropTypes> = (props) => {
+const UserIcon : React.FC<PropTypes> = (props) => {
     const {UserIcon} = props;
     return <Grid item key={props.student?.roll}>
         <Stack sx={{position:'relative'}}>

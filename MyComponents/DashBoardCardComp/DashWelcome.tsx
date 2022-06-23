@@ -15,6 +15,8 @@ import {
   Grid,
   Stack,
   TextField,
+  Menu,
+  MenuItem,
 } from "@mui/material";
 // @mui
 import { useTheme, styled, alpha } from "@mui/material/styles";
@@ -27,15 +29,21 @@ import {
 } from "../../components/hook-form";
 
 import { LoadingButton } from "@mui/lab";
+import Iconify from "../../components/Iconify";
 
 type FormValuesProps = {
   rollNumber: string;
   otp: string;
 };
 
+const CourseNames = ["Introduction To Coding", "Python Basic", "Certificate in Data Science"];
+
 export default function DashWelcome() {
   const theme = useTheme();
   const [selectedCourse, setSelectedCourse] = useState("python");
+
+  const [CourseName, setCourseName] = useState("Introduction To Coding");
+  const [OpenTitleDDL, setOpenTitleDDL] = useState<null | HTMLElement>(null);
 
   const RegisterSchema = Yup.object().shape({
     rollNumber: Yup.string().required("Roll Number Required"),
@@ -83,10 +91,63 @@ export default function DashWelcome() {
   const changeCourse = (event: any) => {
     setSelectedCourse(event.target.value);
   };
+
+  const handleOpenTitle = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setOpenTitleDDL(event.currentTarget);
+  };
+
+  const handleCloseTitleDDL = (event: any, title: string) => {
+    setCourseName(title)
+    setOpenTitleDDL(null)
+  };
+
+
   return (
     <>
       <FormProvider methods={methods} onSubmit={handleSubmit(onSubmit)}>
+        {/* CourseName */}
         <Stack
+            width={{ xs: "100%", sm: "auto" }}
+            direction={{ xs: "column", sm: "row" }}
+            // spacing={2}
+          >
+            <Button color="inherit" onClick={handleOpenTitle}>
+              <Typography variant="h5" component={"h1"}>
+                {CourseName}
+              </Typography>
+              <Iconify
+                icon={
+                  OpenTitleDDL
+                    ? "eva:arrow-ios-upward-fill"
+                    : "eva:arrow-ios-downward-fill"
+                }
+                sx={{ ml: 0.6, width: 16, height: 16 }}
+              />
+            </Button>
+            <Menu
+              keepMounted
+              id="simple-menu"
+              anchorEl={OpenTitleDDL}
+              onClose={(e) => handleCloseTitleDDL(e, CourseName)}
+              open={Boolean(OpenTitleDDL)}
+            >
+              {CourseNames.map((title) => (
+                <MenuItem
+                  key={title}
+                  onClick={(e) => handleCloseTitleDDL(e, title)}
+                >
+                  {title}
+                </MenuItem>
+              ))}
+            </Menu>
+          </Stack>
+      </FormProvider>
+    </>
+  );
+}
+
+
+{/* <Stack
           direction={{ xs: "column", md: "row" }}
           justifyContent={"space-between"}
           spacing={2}
@@ -96,7 +157,7 @@ export default function DashWelcome() {
             Introduction To Coding
           </Typography>
 
-          <Stack
+          {/* <Stack
             width={{ xs: "100%", sm: "auto" }}
             direction={{ xs: "column", sm: "row" }}
             spacing={2}
@@ -131,10 +192,13 @@ export default function DashWelcome() {
               Start Lesson
             </LoadingButton>
           </Stack>
-        </Stack>
-      </FormProvider>
+        </Stack>*/}
 
-      {/* <RadioGroup */}
+
+
+
+
+ {/* <RadioGroup */}
       {/* <RadioGroup
         row
         defaultValue="python"
@@ -175,7 +239,7 @@ export default function DashWelcome() {
         <Grid item xs={12}>
       </RadioGroup> */}
 
-      <Grid container spacing={3}>
+      {/* <Grid container spacing={3}>
         <Grid item xs={12}>
           <RadioGroup
             row
@@ -293,11 +357,8 @@ export default function DashWelcome() {
             price of INR 2500/-
           </Alert>
         </Grid> */}
-
+{/* 
         <Grid item xs={12}>
           <InvitationCard />
         </Grid>
-      </Grid>
-    </>
-  );
-}
+      </Grid> */}

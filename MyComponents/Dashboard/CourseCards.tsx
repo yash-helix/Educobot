@@ -20,6 +20,8 @@ import IconLock from "../../assets/icon_Lock";
 import shadows from "../../theme/shadows";
 import pellete from "../../theme/palette";
 import Iconify from "../../components/Iconify";
+import axios from "axios";
+import { useEffect, useState } from "react";
 
 const RootStyle = styled("div")(({ theme }) => ({
   padding: theme.spacing(0, 0),
@@ -31,6 +33,83 @@ const RootStyle = styled("div")(({ theme }) => ({
 const CourseCards = () => {
   const theme = useTheme();
   const isLight = theme.palette.mode === "light";
+
+  const [allLessonsData, setAllLessonsData] = useState([]);
+
+  // open lessons
+  const GetOpenPINs = async (allLessons) => {
+      try {
+        const response = await axios.post("https://api.educobot.com/sessionRoute/getOpenPIN",
+        { "std": "5", "div": "A", course: "Introduction To Coding"},
+        {
+          headers: {
+            "authorization": `Bearer ${localStorage.getItem("accessToken")}`
+          }
+          });
+          
+          // now overwrite received data as active by matching id into MasterLessons
+          //(logic inside map only works if active lesson data is there sequentially i.e from beginning)
+          if (response.data.data) {
+            const ActiveData = response.data.data;
+
+            for(let i=0;i<ActiveData.length;i++)
+            {
+                for(let j=0; j<allLessons.length; j++)
+                {
+                    if(ActiveData[i]?.spLessonID == allLessons[j].lsID && !allLessons[j].hasOwnProperty('isExpired'))
+                    {
+                        allLessons[j]['otp'] = ActiveData[i]?.spPIN;
+                        allLessons[j]['isActive'] = true;
+                        allLessons[j]['date'] = ActiveData[i]?.spDate;
+                    }
+                }
+            }
+            return allLessons;
+        }
+      }
+      catch (error) {
+        console.log(error);
+        return allLessons;
+      }
+  }
+  
+  const getAllLessonData1 = async () => {
+    // const formData = new FormData();
+    // formData.append('courseName', CourseName);
+    let body = {courseName:"Introduction To Coding"}
+    await axios.post("https://api.educobot.com/lessonsRoute/getLessonsByCourse", body,
+      {
+        headers: { 'Content-Type': 'application/json' }
+      })
+      .then(async (res) => {
+        if (res.status === 200) {
+            console.log(res.data)
+          let allLessonsArr = res.data.map(obj => obj.Lessons);
+          let allLessons = allLessonsArr.flatMap(obj => obj);
+          allLessons = await GetOpenPINs(allLessons);
+
+          setAllLessonsData([...allLessons]);
+
+          // allLessons = await GetOpenPINs(allLessons);
+          // setState(allLessons);
+        }
+      })
+      .catch(err => {
+        console.log(err)
+      })
+  }
+
+
+  const setState = (allLessons)=>{
+    setAllLessonsData([...allLessons]);
+  }
+
+
+  useEffect(() => {
+    getAllLessonData1();
+  }, []);
+  
+
 
   return (
     <div>
@@ -88,6 +167,115 @@ const CourseCards = () => {
 
 export default CourseCards;
 
+// type CardProps = {
+//   course: any;
+//   index: number;
+//   isLight: any;
+//   theme: any;
+// };
+
+// export const CardComp = ({ course, index, isLight, theme }: CardProps)=>{
+//   let tags = ["tag1", "tag2", "tag3", "tag4"];
+
+//   return(
+//     <Card
+//       sx={{
+//         py: 2.5,
+//         px: 1,
+//         my: 2,
+//         mx: 1,
+//         //minHeight: "475px",
+//         maxWidth: "350px",
+//         //   width:"252px",
+
+//         display: "flex",
+//         flexDirection: "column",
+//         justifyContent: "space-between",
+//         ...((course.isActive) && { background: "linear-gradient(135deg, #84A9FF 0%, #1939B7 100%)" }),
+//         ...(((!course.isActive) && (course.nextLessonToBeAccess !== course.lsID) && isLight) && { backgroundColor: pellete.light.grey[200] }),
+//         ...((course.isExpired && isLight) && { backgroundColor: pellete.light.grey[0] })
+//       }}>
+
+//       <Stack spacing={1.5} padding={1}>
+//         {/* TITLE & INDEX */}
+//         <Stack direction="row" alignItems="center" spacing={2}>
+//           <Typography
+//             variant="body2"
+//             fontWeight={600}
+//             sx={{
+//               color: isLight
+//                 ? pellete.light.grey[100]
+//                 : pellete.light.grey[900],
+//               backgroundColor: isLight
+//                 ? pellete.light.grey[900]
+//                 : pellete.light.grey[200],
+//               padding: "1px 7px",
+//               border: "1.5px solid #F9FAFB",
+//               borderRadius: "100%",
+//               display: "grid",
+//               placeItems: "center"
+//             }}
+//           >
+//             {course.lsLessonNo}
+//           </Typography>
+
+//           <Typography
+//             variant="h6"
+//             sx={{
+//               fontSize: ".8rem",
+//               color: course.isActive && pellete.light.grey[100]
+//             }}
+//           >
+//             {course?.lsName}
+//           </Typography>
+//         </Stack>
+
+//         {/* TAGS */}
+//         <Grid container gap={1}>
+//           {tags.map((tag, i) => (
+//             <Grid item key={i}>
+//               {course[`lsSkillTag${i + 1}`] &&
+//                 <Chip
+//                   key={i}
+//                   size="small"
+//                   label={course[`lsSkillTag${i + 1}`]}
+//                   sx={{
+//                     color: isLight
+//                       ? pellete.light.grey[600]
+//                       : pellete.light.grey[400],
+//                     backgroundColor: isLight
+//                       ? pellete.light.grey[500_16]
+//                       : pellete.light.grey[700],
+//                     borderRadius: "10px",
+//                     ...(course.isActive == true && {
+//                       backgroundColor: pellete.light.grey[300],
+//                       color: pellete.light.grey[800],
+//                     }),
+//                   }}
+//                 />
+//               }
+//             </Grid>
+//           ))}
+//         </Grid>
+
+//       </Stack>
+//       {
+//         course.lsCourse !== "Python Basic" &&
+//         <Image alt="image" src={`https://app.educobot.com/liveLessons/thumbNails/${course.lsName}.png`} borderRadius={"8px"} />
+//       }
+
+//       <Stack gap={1} padding={1}>
+//         {/* DESCRIPTION */}
+//         <Typography sx={{ color: course.isActive ? "#fff" : pellete.light.grey[500] }}>
+//           {course?.lsDesc}
+//         </Typography>
+
+//       </Stack>
+//     </Card>
+//   )
+// }
+
+
 type CardProps = {
   data: {
     title: string;
@@ -132,6 +320,16 @@ export const CardComp = ({ data, index, isLight, theme }: CardProps) => {
     starsCoin.half = 0;
   }
 
+  const getShadow = (status)=>{
+    if(status=="done"){
+      return "0px 12px 24px -4px rgba(145, 158, 171, 0.12), 0px 0px 2px 0px rgba(145, 158, 171, 0.2)"
+    }
+    else if(status=="start"){
+      return "0px 8px 16px 0px rgba(51, 102, 255, 0.24)"
+    }
+    else return "0 0 0 0"
+  }
+
   return (
     <Card
       sx={{
@@ -143,7 +341,9 @@ export const CardComp = ({ data, index, isLight, theme }: CardProps) => {
         ...(data.status === "locked" && {
           background: isLight && theme.palette.background.neutral,
         }),
-        boxShadow: isLight && data.status === "done" && shadows.light[3],
+        //boxShadow: isLight && data.status === "done" && shadows.light[3],
+        //boxShadow: '0px 0px 2px 0px rgba(145, 158, 171, 0.2)'
+        boxShadow:getShadow(data.status),
       }}
     >
       {/* title & index */}

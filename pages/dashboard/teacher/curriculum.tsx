@@ -101,7 +101,7 @@ Curriculum2_1.getLayout = function getLayout(page: React.ReactElement) {
 
 // ----------------------------------------------------------------------
 
-const CLASS_DATA = ["5", "6", "7", "8", "9"];
+const CLASS_DATA = ["5", "6", "7", "8"];
 const DIVISION_DATA = ["A", "B", "C", "D"];
 const CourseNames = ["Introduction To Coding", "Python Basic", "Certificate in Data Science"];
 const expiredLessons = [
@@ -120,7 +120,7 @@ export default function Curriculum2_1() {
   const [closeAlert, setCloseAlert] = useState(true);
   const [closeAlertMsg, setCloseAlertMsg] = useState("");
 
-  const [classValue, setClassValue] = useState("Class");
+  const [classValue, setClassValue] = useState("5");
   const [divisionValue, setDivisionValue] = useState("Division");
   const [CourseName, setCourseName] = useState("Introduction To Coding");
 
@@ -223,10 +223,25 @@ export default function Curriculum2_1() {
           if (currentActiveLessson>=0) {
             let newArr = allLessons;
             let i=1;
+            
+            // to make the previous lessons accessible if they are skipped from generating otp
+            let j = currentActiveLessson - 1;
+            if(j>0)
+            {
+              while(j>=0)
+              {
+                if(newArr[j]?.isActive != true  && newArr[j]?.isExpired != true){
+                  newArr[j].isActive = true;
+                }
+                j--;
+              }
+            }
+                  
             while(i<=allLessons.length)
             {
               if (!newArr[currentActiveLessson].hasOwnProperty('isExpired')) {
                 newArr[currentActiveLessson].isActive = true;
+
                 if(!newArr[currentActiveLessson + i].hasOwnProperty('isExpired')){
                   newArr[currentActiveLessson + i].nextLessonToBeAccess = true;
                   newArr[currentActiveLessson + i].nextLessonIDToBeAccess = newArr[currentActiveLessson + i].lsID;
@@ -276,7 +291,6 @@ export default function Curriculum2_1() {
       })
       .then(async (res) => {
         if (res.status === 200) {
-            console.log(res.data)
           let allLessonsArr = res.data.map(obj => obj.Lessons);
           const allLessons = allLessonsArr.flatMap(obj => obj);
 
@@ -321,7 +335,6 @@ export default function Curriculum2_1() {
   }
 
   const mapMasterLessonsByLevels = () => {
-    console.log("Map")
     SetLevelArray([]);
     
     MasterLessons.length > 0 &&
@@ -361,31 +374,22 @@ export default function Curriculum2_1() {
 
 
   // opening of dropdown
-  const handleOpenClass = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setOpen(event.currentTarget);
-  };
-
-  const handleOpenDivision = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setOpen2(event.currentTarget);
-  };
-
   const handleOpenTitle = (event: React.MouseEvent<HTMLButtonElement>) => {
     setOpenTitleDDL(event.currentTarget);
   };
 
   // on closing the dropdowns
-  const handleCloseClass = (event: any, option: string) => {
-    option !== classValue ?
-      (setClassValue(option), setDivisionValue("Division")) :
+  const handleCloseClass = (event: any) => {
+    event.target.value !== classValue ?
+      (setClassValue(event.target.value), setDivisionValue("Division")) :
       ""
     setOpen(null);
   };
 
-  const handleCloseDivision = (event: any, option: string) => {
-    setDivisionValue(option)
+  const handleCloseDivision = (event: any) => {
+    setDivisionValue(event.target.value)
     setOpen2(null);
     getAllLessonData();
-    //GetOpenPINs(option);
   };
 
   const handleCloseTitleDDL = (event: any, title: string) => {
@@ -396,11 +400,17 @@ export default function Curriculum2_1() {
 
   return (
     <Page title="Teacher: Curriculum2">
-
       <Alert
         variant="filled"
         severity="error"
-        sx={{ fontSize: "14px", fontWeight: 400, alignItems: "center", display: closeAlert == true ? "none" : "flex", mb: 1, zIndex: 1 }}
+        sx={{
+          fontSize: "14px",
+          fontWeight: 400,
+          alignItems: "center",
+          display: closeAlert == true ? "none" : "flex",
+          mb: 1,
+          zIndex: 1,
+        }}
         action={
           <Button
             color="inherit"
@@ -411,7 +421,10 @@ export default function Curriculum2_1() {
               border: (theme) =>
                 `1px solid ${alpha(theme.palette.common.white, 0.48)}`,
             }}
-            onClick={() => { setCloseAlert(true); setCloseAlertMsg("") }}
+            onClick={() => {
+              setCloseAlert(true);
+              setCloseAlertMsg("");
+            }}
           >
             Close
           </Button>
@@ -427,14 +440,16 @@ export default function Curriculum2_1() {
           justifyContent={"space-between"}
           alignItems={{ xs: "start", md: "center" }}
         >
-
           {/* CourseName */}
-          <Stack width={{ xs: "100%", sm: "auto" }}
+          <Stack
+            width={{ xs: "100%", sm: "auto" }}
             direction={{ xs: "column", sm: "row" }}
             // spacing={2}
-            >
+          >
             <Button color="inherit" onClick={handleOpenTitle}>
-              <Typography variant="h5" component={"h1"}>{CourseName}</Typography>
+              <Typography variant="h5" component={"h1"}>
+                {CourseName}
+              </Typography>
               <Iconify
                 icon={
                   OpenTitleDDL
@@ -452,7 +467,10 @@ export default function Curriculum2_1() {
               open={Boolean(OpenTitleDDL)}
             >
               {CourseNames.map((title) => (
-                <MenuItem key={title} onClick={(e) => handleCloseTitleDDL(e, title)}>
+                <MenuItem
+                  key={title}
+                  onClick={(e) => handleCloseTitleDDL(e, title)}
+                >
                   {title}
                 </MenuItem>
               ))}
@@ -463,8 +481,9 @@ export default function Curriculum2_1() {
           <Stack
             width={{ xs: "100%", sm: "auto" }}
             direction={{ xs: "column", sm: "row" }}
-            spacing={2}>
-            <Button variant="outlined" color="inherit" onClick={handleOpenClass}>
+            spacing={2}
+          >
+            {/* <Button variant="outlined" color="inherit" onClick={handleOpenClass}>
               {classValue}
               <Iconify
                 icon={
@@ -474,67 +493,69 @@ export default function Curriculum2_1() {
                 }
                 sx={{ ml: 0.5, width: 16, height: 16 }}
               />
-            </Button>
-            <Menu
-              keepMounted
-              id="simple-menu"
-              anchorEl={isOpen}
-              onClose={(e) => handleCloseClass(e, classValue)}
-              open={Boolean(isOpen)}
+            </Button> */}
+
+            <TextField
+              select
+              size="small"
+              sx={{ width: "120px", height: "40px" }}
+              label="Class"
+              value={classValue}
+              onChange={handleCloseClass}
             >
               {CLASS_DATA.map((option) => (
-                <MenuItem key={option} onClick={(e) => handleCloseClass(e, option)}>
+                <MenuItem key={option} value={option}>
                   {option}
                 </MenuItem>
               ))}
-            </Menu>
+            </TextField>
 
-            <Button variant="outlined" color="inherit" onClick={handleOpenDivision} >
-              {divisionValue}
-              <Iconify
-                icon={
-                  isOpen2
-                    ? "eva:arrow-ios-upward-fill"
-                    : "eva:arrow-ios-downward-fill"
-                }
-                sx={{ ml: 0.5, width: 16, height: 16 }}
-              />
-            </Button>
-            <Menu
-              keepMounted
-              id="simple-menu"
-              anchorEl={isOpen2}
-              onClose={(e) => handleCloseDivision(e, divisionValue)}
-              open={Boolean(isOpen2)}
-            // onClick={CheckOpenPin}
+            <TextField
+              select
+              size="small"
+              sx={{ width: "120px", height: "40px" }}
+              label={"Division"}
+              value={divisionValue}
+              onChange={handleCloseDivision}
             >
               {DIVISION_DATA.map((option) => (
-                <MenuItem key={option} onClick={(e) => handleCloseDivision(e, option)}>
+                <MenuItem key={option} value={option}>
                   {option}
                 </MenuItem>
               ))}
-            </Menu>
+            </TextField>
+
+            
           </Stack>
         </Stack>
 
         {/* lesson cards */}
         <Stack>
-        {
-          LevelArray.length > 0 &&
-          LevelArray.map((level, index: any) => {
-            return (
-              (classValue == "Class" || divisionValue == "Division") ?
-                <LessonCard key={index} level={level} index={index} isDivSelected={false} />
-                :
-                <LessonCard key={index} level={level} index={index} isDivSelected={true} getOTP={getOTP} />
-            )
-          })
-        }
+          {LevelArray.length > 0 &&
+            LevelArray.map((level, index: any) => {
+              return classValue == "Class" || divisionValue == "Division" ? (
+                <LessonCard
+                  key={index}
+                  level={level}
+                  index={index}
+                  isDivSelected={false}
+                />
+              ) : (
+                <LessonCard
+                  key={index}
+                  level={level}
+                  index={index}
+                  isDivSelected={true}
+                  getOTP={getOTP}
+                />
+              );
+            })}
         </Stack>
       </Container>
     </Page>
   );
 }
+
 
 
 
@@ -641,7 +662,18 @@ export const LessonCard = ({ level, index, isDivSelected, getOTP }: LessonCardPr
       </>
     }
   }
+
+  const getShadow = (course: any)=>{
+    if(course.isExpired){
+      return "0px 12px 24px -4px rgba(145, 158, 171, 0.12), 0px 0px 2px 0px rgba(145, 158, 171, 0.2)"
+    }
+    else if(course.isActive){
+      return "0px 8px 16px 0px rgba(51, 102, 255, 0.24)"
+    }
+    else return "0 0 0 0"
+  }
   // let id = uuidv4();
+
   return (
     <Box mt={"40px"}>
       <Typography variant="h6" component={"h1"} paddingLeft={1}>
@@ -653,6 +685,7 @@ export const LessonCard = ({ level, index, isDivSelected, getOTP }: LessonCardPr
         level.map((course, i) => {
           const circleRounded = course.lsID <= 9 ? "50%" : "30px";
           const circleSize = course.lsID <= 9 ? "26px" : "30px";
+
           return (
             <Grid item xs={12} sm={6} md={4} lg={4} xl={3} key={`${course?.lsID}`}>
               <Card
@@ -670,7 +703,8 @@ export const LessonCard = ({ level, index, isDivSelected, getOTP }: LessonCardPr
                   justifyContent: "space-between",
                   ...((course.isActive) && { background: "linear-gradient(135deg, #84A9FF 0%, #1939B7 100%)" }),
                   ...(((!course.isActive) && (course.nextLessonToBeAccess !== course.lsID) && isLight) && { backgroundColor: pellete.light.grey[200] }),
-                  ...((course.isExpired && isLight) && { backgroundColor: pellete.light.grey[0] })
+                  ...((course.isExpired && isLight) && { backgroundColor: pellete.light.grey[0] }),
+                  boxShadow:getShadow(course),
                 }}>
 
                 <Stack spacing={1.5} padding={1}>

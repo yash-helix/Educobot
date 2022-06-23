@@ -45,11 +45,11 @@ const navConfig = [
         path: PATH_DASHBOARD.general.reports,
         icon: ICONS.analytics,
       },
-      {
-        title: "Library",
-        path: PATH_DASHBOARD.general.library,
-        icon: ICONS.banking,
-      },
+      // {
+      //   title: "Library",
+      //   path: PATH_DASHBOARD.general.library,
+      //   icon: ICONS.banking,
+      // },
     ],
   },
 
@@ -98,11 +98,11 @@ const studentConfig = [
         path: PATH_DASHBOARD.general.curriculum,
         icon: ICONS.curriculum,
       },
-      {
-        title: "Library",
-        path: PATH_DASHBOARD.general.library,
-        icon: ICONS.banking,
-      },
+      // {
+      //   title: "Library",
+      //   path: PATH_DASHBOARD.general.library,
+      //   icon: ICONS.banking,
+      // },
     ],
   },
 
@@ -142,11 +142,11 @@ const teacherConfig = [
         path: PATH_DASHBOARD.teacher.list,
         icon: ICONS.userGroup,
       },
-      {
-        title: "Library",
-        path: PATH_DASHBOARD.teacher.new,
-        icon: ICONS.banking,
-      },
+      // {
+      //   title: "Library",
+      //   path: PATH_DASHBOARD.teacher.new,
+      //   icon: ICONS.banking,
+      // },
     ],
   },
 
@@ -161,11 +161,11 @@ const teacherConfig = [
         path: PATH_DASHBOARD.teacher.demoEdit,
         icon: ICONS.user,
       },
-      {
-        title: "Classrooms",
-        path: PATH_DASHBOARD.general.profile,
-        icon: ICONS.user,
-      },
+      // {
+      //   title: "Classrooms",
+      //   path: PATH_DASHBOARD.general.profile,
+      //   icon: ICONS.user,
+      // },
     ],
   },
 ];
@@ -186,11 +186,11 @@ const schoolAdminConfig = [
         path: PATH_DASHBOARD.general.curriculum,
         icon: ICONS.userGroup,
       },
-      {
-        title: "Classrooms",
-        path: PATH_DASHBOARD.general.library,
-        icon: ICONS.banking,
-      },
+      // {
+      //   title: "Classrooms",
+      //   path: PATH_DASHBOARD.general.library,
+      //   icon: ICONS.banking,
+      // },
       {
         title: "Curriculum",
         path: PATH_DASHBOARD.general.curriculum,

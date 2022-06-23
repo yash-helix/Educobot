@@ -17,7 +17,7 @@ const Logo = forwardRef<any, Props>(({ disabledLink = false, sx }, ref) => {
   // const PRIMARY_DARK = theme.palette.primary.dark;
 
   const logo = (
-    <Box ref={ref} sx={{ width: 40, height: 40, cursor: 'pointer', ...sx }}>
+    <Box ref={ref} sx={{cursor: 'pointer', ...sx}}>
       {/* <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 512 512">
         <defs>
           <linearGradient id="BG1" x1="100%" x2="50%" y1="9.946%" y2="50%">

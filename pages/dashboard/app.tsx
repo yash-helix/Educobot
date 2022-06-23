@@ -60,7 +60,9 @@ export default function GeneralApp() {
             <Grid item xs={12}>
               <CourseCards />
             </Grid>
-            <Grid item xs={12} sm={12} md={4} lg={4} xl={4}>
+
+            {/* donut */}
+            {/* <Grid item xs={12} sm={12} md={4} lg={4} xl={4}>
               <SyllabusCard
                 card={{
                   title:
@@ -70,16 +72,16 @@ export default function GeneralApp() {
                   total: 100,
                 }}
               />
-            </Grid>
+            </Grid> */}
 
-            <Grid item xs={12} md={8} lg={8}>
+            <Grid item xs={12} md={12} lg={12}>
               <AchievementCard
                 card={{
                   title:
                     "Last year, you have earned more coins than most students in your age group ",
                   CHART_DATA: [
                     {
-                      year: "Current Year",
+                      year: "Last Week",
                       data: [
                         {
                           name: "My Coins",
@@ -92,7 +94,7 @@ export default function GeneralApp() {
                       ],
                     },
                     {
-                      year: "Last Year",
+                      year: "Last Month",
                       data: [
                         {
                           name: "My Coins",
@@ -105,11 +107,24 @@ export default function GeneralApp() {
                       ],
                     },
                     {
-                      year: "2019-20",
+                      year: "Last 6 Months",
                       data: [
                         {
                           name: "My Coins",
-                          data: [148, 91, 69, 62, 49, 49, 51, 35, 51, 35, 41, 10],
+                          data: [148, 95, 69, 70, 49, 49, 56, 67, 51, 35, 41, 15],
+                        },
+                        {
+                          name: "Average Coins earned in my age group",
+                          data: [45, 77, 99, 49, 51, 35, 88, 77, 56, 13, 34, 10],
+                        },
+                      ],
+                    },
+                    {
+                      year: "Last Year",
+                      data: [
+                        {
+                          name: "My Coins",
+                          data: [148, 91, 63, 62, 49, 49, 57, 35, 51, 25, 48, 10],
                         },
                         {
                           name: "Average Coins earned in my age group",
