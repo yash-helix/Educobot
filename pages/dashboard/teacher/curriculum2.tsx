@@ -114,7 +114,6 @@ export default function Curriculum2_1() {
     const [CourseName, setCourseName] = useState("Introduction To Coding");
 
     const [MasterLessons, setMasterLessons] = useState([]);
-
     const [LevelArray, SetLevelArray] = useState([]);
 
     const token = localStorage.getItem("accessToken");
@@ -284,34 +283,6 @@ export default function Curriculum2_1() {
             .catch(err => {
                 console.log(err)
             })
-    }
-
-    const getOTP = async (id: any) => {
-        if (CLASS_DATA.includes(classValue) && DIVISION_DATA.includes(divisionValue)) {
-            const schoolID = localStorage.getItem("schoolID");
-            const userID = localStorage.getItem("userID");
-            let body = {
-                "std": `${classValue}`,
-                "div": `${divisionValue}`,
-                "lessonID": `${id}`,
-                "course": `${CourseName}`
-            }
-
-            await axios.post("https://api.educobot.com/sessionRoute/generateOTP", body,
-                { headers: { 'Content-Type': 'application/json', 'authorization': `Bearer ${localStorage.getItem("accessToken")}` } })
-                .then(res => {
-                    if (res.status == 200) {
-                        getAllLessonData1();
-                    }
-                })
-                .catch(err => {
-                    console.log(err)
-                })
-        }
-        else {
-            setCloseAlertMsg("Please select the class and division");
-            setCloseAlert(false);
-        }
     }
 
     const mapMasterLessonsByLevels = () => {
@@ -532,13 +503,13 @@ export default function Curriculum2_1() {
                         {/* otp button */}
                         {
                             CourseOTP ?
-                                <Button variant="outlined" color="primary" onClick={generateOTP}>
-                                    Regenerate OTP
-                                </Button>
-                                :
-                                <Button variant="contained" color="primary" onClick={generateOTP}>
-                                    Generate OTP
-                                </Button>
+                            <Button variant="contained" color="primary" onClick={generateOTP}>
+                                Generate OTP
+                            </Button>
+                            :
+                            <Button variant="contained" color="primary" disabled>
+                                Generate OTP
+                            </Button>
                         }
                     </Stack>
                 </Stack>
@@ -560,7 +531,6 @@ export default function Curriculum2_1() {
                                     level={level}
                                     index={index}
                                     isDivSelected={true}
-                                    getOTP={getOTP}
                                 />
                             );
                         })}
@@ -578,11 +548,10 @@ export default function Curriculum2_1() {
 type LessonCardProps = {
     level: any,
     index: Number,
-    getOTP?: (id: string) => Promise<void>,
     isDivSelected: boolean
 }
 
-export const LessonCard = ({ level, index, isDivSelected, getOTP }: LessonCardProps) => {
+export const LessonCard = ({ level, index, isDivSelected }: LessonCardProps) => {
     const theme = useTheme();
     const isLight = theme.palette.mode === "light";
     let tags = ["tag1", "tag2", "tag3", "tag4"];
@@ -625,10 +594,10 @@ export const LessonCard = ({ level, index, isDivSelected, getOTP }: LessonCardPr
         // active & has otp
         if (course?.isActive == true && course?.otp) {
             return <>
-                <Button fullWidth variant="contained" color="inherit" sx={{ margin: "10px" }} onClick={() => openLesson(lsID, course)}>
+                <Button fullWidth variant="contained" color="inherit" sx={{ margin: "10px" }}>
                     Open
                 </Button>
-                <Button fullWidth variant="contained" color="error" sx={{ margin: "10px" }} onClick={async () => await getOTP(course.lsID)}>
+                <Button fullWidth variant="contained" color="error" sx={{ margin: "10px" }}>
                     Reset OTP
                 </Button>
             </>
@@ -636,10 +605,10 @@ export const LessonCard = ({ level, index, isDivSelected, getOTP }: LessonCardPr
         // active & don't have otp
         else if (course?.isActive == true) {
             return <>
-                <Button variant="contained" fullWidth color="inherit" sx={{ margin: "10px" }} onClick={() => openLesson(lsID, course)}>
+                <Button variant="contained" fullWidth color="inherit" sx={{ margin: "10px" }}>
                     Open
                 </Button>
-                <Button variant="contained" fullWidth color="error" sx={{ margin: "10px" }} onClick={async () => await getOTP(course.lsID)}>
+                <Button variant="contained" fullWidth color="error" sx={{ margin: "10px" }}>
                     Get OTP
                 </Button>
             </>
@@ -647,10 +616,10 @@ export const LessonCard = ({ level, index, isDivSelected, getOTP }: LessonCardPr
         // next lesson to be able to get otp
         else if (course.nextLessonToBeAccess == true) {
             return <>
-                <Button variant="outlined" fullWidth color="inherit" sx={{ margin: "10px" }} onClick={() => openLesson(lsID, course)}>
+                <Button variant="outlined" fullWidth color="inherit" sx={{ margin: "10px" }}>
                     Open
                 </Button>
-                <Button variant="outlined" fullWidth color="inherit" sx={{ margin: "10px" }} onClick={async () => await getOTP(course.lsID)}>
+                <Button variant="outlined" fullWidth color="inherit" sx={{ margin: "10px" }}>
                     Get OTP
                 </Button>
             </>
@@ -659,7 +628,7 @@ export const LessonCard = ({ level, index, isDivSelected, getOTP }: LessonCardPr
         // expired lesson
         else if (course.isExpired && isDivSelected == true) {
             return <>
-                <Button fullWidth variant="outlined" color="inherit" sx={{ margin: "10px" }} onClick={() => openLesson(lsID, course)}>
+                <Button fullWidth variant="outlined" color="inherit" sx={{ margin: "10px" }}>
                     Open
                 </Button>
             </>
