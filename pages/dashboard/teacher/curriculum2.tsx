@@ -68,7 +68,7 @@ import {
     RHFTextField,
 } from "../../../components/hook-form";
 
-import { LoadingButton } from "@mui/lab";
+import { LoadingButton, masonryClasses } from "@mui/lab";
 
 import pellete from "../../../theme/palette";
 import Image from "../../../components/Image";
@@ -77,6 +77,7 @@ import dummyIMG from "../../../public/imgs/rabbitImg.png";
 import { ClassNames } from "@emotion/react";
 import Link from "next/link";
 import uuidv4 from "../../../utils/uuidv4";
+import LockIcon from "../../../assets/icon_Lock";
 
 // ----------------------------------------------------------------------
 
@@ -92,8 +93,8 @@ const CLASS_DATA = ["5", "6", "7", "8"];
 const DIVISION_DATA = ["A", "B", "C", "D"];
 const CourseNames = ["Introduction To Coding", "Python Basic", "Certificate in Data Science"];
 const expiredLessons = [
-    { id: "00351ca6-78bd-479a-94d6-e40a9cc86313", otp: 3245 },
-    { id: "8bedf833-bde2-433c-9930-f9f8947f2631", otp: 1263 },
+    { spLessonID: "4bda4814-a2b1-4c4f-b102-eda5181bd0f8", otp: 3245 },
+    { spLessonID: "e0c38e50-cbb3-455f-ae16-d737fc624b24", otp: 1234 }
 ];
 
 export default function Curriculum2_1() {
@@ -102,13 +103,15 @@ export default function Curriculum2_1() {
     const { push } = useRouter();
 
     const [CourseOTP, setCourseOTP] = useState("");
+    const [OTPButton, setOTPButton] = useState(false);
 
-    const [isOpen, setOpen] = useState<null | HTMLElement>(null);
-    const [isOpen2, setOpen2] = useState<null | HTMLElement>(null);
-    const [OpenTitleDDL, setOpenTitleDDL] = useState<null | HTMLElement>(null);
+    
     const [closeAlert, setCloseAlert] = useState(true);
     const [closeAlertMsg, setCloseAlertMsg] = useState("");
-
+    const [OTPsnackbar, setOTPsnackbar] = useState(false);
+    
+    
+    const [OpenTitleDDL, setOpenTitleDDL] = useState<null | HTMLElement>(null);
     const [classValue, setClassValue] = useState("5");
     const [divisionValue, setDivisionValue] = useState("Division");
     const [CourseName, setCourseName] = useState("Introduction To Coding");
@@ -118,130 +121,99 @@ export default function Curriculum2_1() {
 
     const token = localStorage.getItem("accessToken");
 
-    const GetOpenPINs = async (allLessons) => {
+  
+
+
+    // api's to be called after selecting the class and division
+    const getMax = async(allLessons) => {
+        const token = localStorage.getItem("accessToken");
         if (classValue !== "Class" && divisionValue !== "Division") {
-            try {
-                const response = await axios.post("https://api.educobot.com/sessionRoute/getOpenPIN",
-                    { "std": classValue, "div": divisionValue, course: CourseName },
-                    {
-                        headers: {
-                            "authorization": `Bearer ${token}`
-                        }
-                    });
-
-                // now overwrite received data as active by matching id into MasterLessons
-                //(logic inside map only works if active lesson data is there sequentially i.e from beginning)
-                if (response.data.data) {
-                    const ActiveData = response.data.data;
-
-                    for (let i = 0; i < ActiveData.length; i++) {
-                        for (let j = 0; j < allLessons.length; j++) {
-                            if (ActiveData[i]?.spLessonID == allLessons[j].lsID && !allLessons[j].hasOwnProperty('isExpired')) {
-                                allLessons[j]['otp'] = ActiveData[i]?.spPIN;
-                                allLessons[j]['isActive'] = true;
-                                allLessons[j]['date'] = ActiveData[i]?.spDate;
-                            }
-                        }
-                    }
-
-                    return allLessons;
-                }
-            }
-            catch (error) {
-                console.log(error);
-                return allLessons;
-            }
-        }
-    }
-
-    const getExpiredLessons = async (allLessons) => {
-        if (classValue !== "Class" && divisionValue !== "Division") {
-            try {
-                const response = await axios.post("https://api.educobot.com/sessionRoute/getClosedPIN",
-                    { "std": classValue, "div": divisionValue, course: CourseName },
-                    {
-                        headers: {
-                            "authorization": `Bearer ${token}`
-                        }
-                    });
-
-                if (response.data.data) {
-                    const ExpiredData = response.data.data;
-
-                    for (let i = 0; i < ExpiredData.length; i++) {
-                        for (let j = 0; j < allLessons.length; j++) {
-                            if (ExpiredData[i]?.spLessonID == allLessons[j].lsID) {
-                                //allLessons[j]['otp'] = ExpiredData[i]?.spPIN;
-                                allLessons[j]['isExpired'] = true;
-                                allLessons[j]['date'] = ExpiredData[i]?.spDate;
-                            }
-                        }
-                    }
-
-                    return allLessons;
-                }
-            }
-            catch (err) {
-                console.log(err);
-                return allLessons;
-            }
-        }
-    }
-
-    const GetLatestActiveLesson = async (allLessons) => {
-        if (classValue !== "Class" && divisionValue !== "Division") {
-            const token = localStorage.getItem("accessToken");
             try {
                 const response = await axios.post("https://api.educobot.com/lessonsRoute/getMaxOTPLesson",
-                    { "std": classValue, "div": divisionValue },
+                    { "std": classValue, "div": divisionValue, "course":CourseName },
                     {
                         headers: {
                             "authorization": `Bearer ${token}`
                         }
                     });
 
-                // now overwrite the data to make the nextlesson active
-                let currentActiveLessson = response.data.data[0]?.maxLessonNo;
-                if (currentActiveLessson >= 0) {
-                    let newArr = allLessons;
-                    let i = 1;
-
-                    // to make the previous lessons accessible if they are skipped from generating otp
-                    let j = currentActiveLessson - 1;
-                    if (j > 0) {
-                        while (j >= 0) {
-                            if (newArr[j]?.isActive != true && newArr[j]?.isExpired != true) {
-                                newArr[j].isActive = true;
-                            }
-                            j--;
-                        }
-                    }
-
-                    while (i <= allLessons.length) {
-                        if (!newArr[currentActiveLessson].hasOwnProperty('isExpired')) {
-                            newArr[currentActiveLessson].isActive = true;
-
-                            if (!newArr[currentActiveLessson + i].hasOwnProperty('isExpired')) {
-                                newArr[currentActiveLessson + i].nextLessonToBeAccess = true;
-                                newArr[currentActiveLessson + i].nextLessonIDToBeAccess = newArr[currentActiveLessson + i].lsID;
-                                i++;
-                                break;
-                            }
-                        }
-                        else currentActiveLessson++
-                    }
-                    return newArr;
-                }
+                let currentMaxLesson = response.data.data[0]?.maxLessonNo;
+                allLessons[currentMaxLesson].isActive = true
+                return allLessons;
             }
             catch (error) {
                 console.log(error)
+                return allLessons;
             }
         }
     }
 
+    const getExpired = async (allLessons) => {
+        const token = localStorage.getItem("accessToken");
+        if (classValue !== "Class" && divisionValue !== "Division") {
+            try {
+                for (let i = 0; i < expiredLessons.length; i++) {
+                    for (let j = 0; j < allLessons.length; j++) {
+                        if (expiredLessons[i]?.spLessonID == allLessons[j].lsID) {
+                            allLessons[j]['isExpired'] = true;
+                        }
+                    }
+                }
+
+                return allLessons;
+            }
+            catch (error) {
+                console.log(error)
+                return allLessons;
+            }
+        }
+    }
+
+    const getAllLessonData1 = async () => {
+        let body = { courseName: CourseName }
+        await axios.post("https://api.educobot.com/lessonsRoute/getLessonsByCourse", body,
+            {
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(async (res) => {
+                if (res.status === 200) {
+                    let allLessonsArr = res.data.map(obj => obj.Lessons);
+                    const allLessons = allLessonsArr.flatMap(obj => obj);
+
+                    // let updatedAllLessons = await getExpiredLessons(allLessons);
+                    // updatedAllLessons = await GetOpenPINs(updatedAllLessons);
+                    // updatedAllLessons = await GetLatestActiveLesson(allLessons);
+
+                    // setMasterLessons([...updatedAllLessons]);
+                    
+                    let updatedLessons = await getExpired(allLessons);
+                    updatedLessons = await getMax(updatedLessons);
+                    setMasterLessons([...updatedLessons]);
+                }
+            })
+            .catch(err => {
+                console.log(err)
+            })
+    }
+
+    const getAllLessonTheLockButton = async () => {
+        const get = () => {
+            let allLessons = MasterLessons;
+            allLessons = allLessons.map(lesson => {
+                if (lesson?.isExpired == true || lesson?.isActive == true) {
+                    return { ...lesson, isLocked: true }
+                }
+                else return lesson
+            })
+            return allLessons
+        }
+
+        let allLessons = get();
+        setMasterLessons([...allLessons])
+    }
+
+
     const getAllLessonData = async () => {
-        // const formData = new FormData();
-        // formData.append('courseName', CourseName);
         let body = { courseName: CourseName }
         await axios.post("https://api.educobot.com/lessonsRoute/getLessonsByCourse", body,
             {
@@ -260,34 +232,9 @@ export default function Curriculum2_1() {
             })
     }
 
-    const getAllLessonData1 = async () => {
-        // const formData = new FormData();
-        // formData.append('courseName', CourseName);
-        let body = { courseName: CourseName }
-        await axios.post("https://api.educobot.com/lessonsRoute/getLessonsByCourse", body,
-            {
-                headers: { 'Content-Type': 'application/json' }
-            })
-            .then(async (res) => {
-                if (res.status === 200) {
-                    let allLessonsArr = res.data.map(obj => obj.Lessons);
-                    const allLessons = allLessonsArr.flatMap(obj => obj);
-
-                    let updatedAllLessons = await getExpiredLessons(allLessons);
-                    updatedAllLessons = await GetOpenPINs(updatedAllLessons);
-                    updatedAllLessons = await GetLatestActiveLesson(updatedAllLessons);
-
-                    setMasterLessons([...updatedAllLessons]);
-                }
-            })
-            .catch(err => {
-                console.log(err)
-            })
-    }
 
     const mapMasterLessonsByLevels = () => {
         SetLevelArray([]);
-
         MasterLessons.length > 0 &&
             MasterLessons.map((les, index) => {
                 const levelArr = MasterLessons.map(lesson => lesson?.lsLevel == index + 1 && lesson).filter(item => item != false)
@@ -298,18 +245,41 @@ export default function Curriculum2_1() {
 
 
     useEffect(() => {
+        getAllLessonData();
+    }, [CourseName]);
+
+
+
+    useEffect(() => {
         getAllLessonData1();
     }, [divisionValue, CourseName]);
 
-    useEffect(() => {
-        getAllLessonData();
-    }, [CourseName]);
+
 
     useEffect(() => {
         mapMasterLessonsByLevels();
     }, [MasterLessons]);
 
 
+    // otp if present in local
+    useEffect(() => {
+        const otp = JSON.parse(localStorage.getItem("CourseOTP"));
+        const now = new Date();
+        
+        if (otp !== null) {
+            const then = otp ? new Date(otp?.generateDate) : new Date();
+            const msBetweenDates = Math.abs(then.getTime() - now.getTime());
+            const hoursBetweenDates = msBetweenDates / (60 * 60 * 1000);
+            if (hoursBetweenDates < 24) {
+                setCourseOTP(otp?.otp);
+                getAllLessonTheLockButton();
+                setOTPButton(true);
+            }
+            else setOTPButton(true)
+        }
+        else setOTPButton(true)
+    }, [])
+    
 
     // on error occurred
     useEffect(() => {
@@ -324,6 +294,8 @@ export default function Curriculum2_1() {
     }, [closeAlert])
 
 
+
+
     // opening of dropdown
     const handleOpenTitle = (event: React.MouseEvent<HTMLButtonElement>) => {
         setOpenTitleDDL(event.currentTarget);
@@ -332,14 +304,12 @@ export default function Curriculum2_1() {
     // on closing the dropdowns
     const handleCloseClass = (event: any) => {
         event.target.value !== classValue ?
-            (setClassValue(event.target.value), setDivisionValue("Division")) :
-            ""
-        setOpen(null);
+            (setClassValue(event.target.value), setDivisionValue("Division")) : ""
+        setOTPButton(false)
     };
 
     const handleCloseDivision = (event: any) => {
-        setDivisionValue(event.target.value)
-        setOpen2(null);
+        event.target.value !== divisionValue ? setDivisionValue(event.target.value) : ""
         getAllLessonData();
     };
 
@@ -348,24 +318,60 @@ export default function Curriculum2_1() {
         setOpenTitleDDL(null)
     };
 
-    // generateOTP
-    const generateOTP = async()=>{
-        if (CLASS_DATA.includes(classValue) && DIVISION_DATA.includes(divisionValue)) {
-            let body = {
-                "std": `${classValue}`,
-                "div": `${divisionValue}`,
-                "course": `${CourseName}`
-            }
-            try{
-                const res = await axios.post("https://api.educobot.com/sessionRoute/generateOTP", body,
+
+
+    // generate OTP
+    const getOTP = async() => {
+        let body = {
+            "std": `${classValue}`,
+            "div": `${divisionValue}`,
+            "course": `${CourseName}`
+        }
+        try {
+            const res = await axios.post("https://api.educobot.com/sessionRoute/generateOTP",
+                body,
                 { headers: { 'Content-Type': 'application/json', 'authorization': `Bearer ${localStorage.getItem("accessToken")}` } })
-                
-                console.log(res)
-                res.data?.otp && setCourseOTP(res.data?.otp)
+            setCourseOTP(res.data?.otp);
+            setOTPButton(false);
+
+            const obj = {
+                otp: res.data?.otp,
+                generateDate: new Date()
             }
-            catch(err){
-                setCloseAlertMsg("Unexpected Error Occurred");
-                setCloseAlert(false);
+            localStorage.setItem("CourseOTP", JSON.stringify(obj));
+
+            setOTPsnackbar(true) //info snackbar
+            setTimeout(() => {
+                setOTPsnackbar(false);
+            }, 15000);
+        }
+        catch (err) {
+            setCloseAlertMsg("Unexpected Error Occurred");
+            setCloseAlert(false);
+        }
+    }
+
+    const generateOTP = () => {
+        getAllLessonTheLockButton();
+
+        if (CLASS_DATA.includes(classValue) && DIVISION_DATA.includes(divisionValue)){
+            const otp = JSON.parse(localStorage.getItem("CourseOTP"));
+            const now = new Date();
+            
+            if (otp) {
+                const then = otp ? new Date(otp?.generateDate) : new Date();
+                const msBetweenDates = Math.abs(then.getTime() - now.getTime());
+                const hoursBetweenDates = msBetweenDates / (60 * 60 * 1000);
+                if(hoursBetweenDates < 24)
+                {
+                    setCourseOTP(otp.otp);
+                }
+                else{
+                    getOTP();
+                }
+            }
+            else {
+                getOTP();
             }
         }
         else {
@@ -502,17 +508,20 @@ export default function Curriculum2_1() {
 
                         {/* otp button */}
                         {
-                            CourseOTP ?
                             <Button variant="contained" color="primary" onClick={generateOTP}>
-                                Generate OTP
-                            </Button>
-                            :
-                            <Button variant="contained" color="primary" disabled>
                                 Generate OTP
                             </Button>
                         }
                     </Stack>
                 </Stack>
+
+                {/* otp snackbar */}
+                {OTPsnackbar &&
+                    <Alert variant="filled" severity="info" sx={{ mt: "40px", lineHeight: "140px" }}>
+                        <Typography variant="body1">During this OTP session, you cannot lock a lesson once it is unlocked.</Typography>
+                        <Typography variant="body2">Click the red button below to unlock new lessons in a sequential manner. Past lessons can be unlocked at any time in any sequence. </Typography>
+                    </Alert>
+                }
 
                 {/* lesson cards */}
                 <Stack>
@@ -574,7 +583,6 @@ export const LessonCard = ({ level, index, isDivSelected }: LessonCardProps) => 
         }
     }
 
-
     const validity = (milliseconds) => {
         const d = new Date(Date.now());
         const date = d.getDate();
@@ -589,12 +597,38 @@ export const LessonCard = ({ level, index, isDivSelected }: LessonCardProps) => 
         return `${date} ${month} ${year}, ${hours}:${minutes} ${period}`;
     }
 
-
-    const getButtons = (lsID: string, course: any) => {
-        // active & has otp
-        if (course?.isActive == true && course?.otp) {
+    const getButtonsJSX = (lsID: string, course: any) => {
+        // locked button lesson
+        if(course.isLocked == true && course?.isActive != true){
             return <>
-                <Button fullWidth variant="contained" color="inherit" sx={{ margin: "10px" }}>
+                <Button variant="outlined" fullWidth color="inherit" sx={{ margin: "10px" }}
+                onClick={()=>openLesson(lsID, course)}>
+                    Open
+                </Button>
+                <Button variant="outlined" fullWidth color="error" sx={{ margin: "10px" }}>
+                    <LockIcon fill1="#FF4842" fill2="#FF4842" width="20px" height="20px"/>
+                </Button>
+            </>
+        }
+
+        // active and locked both
+        else if(course?.isLocked == true && course?.isActive == true){
+            return <>
+                <Button variant="contained" fullWidth color="inherit" sx={{ margin: "10px" }}
+                onClick={()=>openLesson(lsID, course)}>
+                    Open
+                </Button>
+                <Button variant="contained" fullWidth color="error" sx={{ margin: "10px" }}>
+                    <LockIcon fill1="#FFF" fill2="#FFF" width="20px" height="20px"/>
+                </Button>
+            </>
+        }
+
+        // active & has otp
+        else if (course?.isActive == true && course?.otp) {
+            return <>
+                <Button fullWidth variant="contained" color="inherit" sx={{ margin: "10px" }} 
+                onClick={()=>openLesson(lsID, course)}>
                     Open
                 </Button>
                 <Button fullWidth variant="contained" color="error" sx={{ margin: "10px" }}>
@@ -602,21 +636,22 @@ export const LessonCard = ({ level, index, isDivSelected }: LessonCardProps) => 
                 </Button>
             </>
         }
+
         // active & don't have otp
         else if (course?.isActive == true) {
             return <>
-                <Button variant="contained" fullWidth color="inherit" sx={{ margin: "10px" }}>
+                <Button variant="contained" fullWidth color="inherit" sx={{ margin: "10px" }}
+                onClick={()=>openLesson(lsID, course)}>
                     Open
-                </Button>
-                <Button variant="contained" fullWidth color="error" sx={{ margin: "10px" }}>
-                    Get OTP
                 </Button>
             </>
         }
+
         // next lesson to be able to get otp
         else if (course.nextLessonToBeAccess == true) {
             return <>
-                <Button variant="outlined" fullWidth color="inherit" sx={{ margin: "10px" }}>
+                <Button variant="outlined" fullWidth color="inherit" sx={{ margin: "10px" }}
+                onClick={()=>openLesson(lsID, course)}>
                     Open
                 </Button>
                 <Button variant="outlined" fullWidth color="inherit" sx={{ margin: "10px" }}>
@@ -628,7 +663,8 @@ export const LessonCard = ({ level, index, isDivSelected }: LessonCardProps) => 
         // expired lesson
         else if (course.isExpired && isDivSelected == true) {
             return <>
-                <Button fullWidth variant="outlined" color="inherit" sx={{ margin: "10px" }}>
+                <Button fullWidth variant="outlined" color="inherit" sx={{ margin: "10px" }}
+                onClick={()=>openLesson(lsID, course)}>
                     Open
                 </Button>
             </>
@@ -636,7 +672,8 @@ export const LessonCard = ({ level, index, isDivSelected }: LessonCardProps) => 
 
         else {
             return <>
-                <Button variant="outlined" fullWidth color="inherit" sx={{ margin: "10px" }}>
+                <Button variant="outlined" fullWidth color="inherit" sx={{ margin: "10px" }}
+                onClick={()=>openLesson(lsID, course)}>
                     Open
                 </Button>
             </>
@@ -650,7 +687,7 @@ export const LessonCard = ({ level, index, isDivSelected }: LessonCardProps) => 
         else if (course.isActive) {
             return "0px 8px 16px 0px rgba(51, 102, 255, 0.24)"
         }
-        else return "0 0 0 0"
+        else return "0px 12px 24px -4px rgba(145, 158, 171, 0.12), 0px 0px 2px 0px rgba(145, 158, 171, 0.2)"
     }
     // let id = uuidv4();
 
@@ -660,7 +697,7 @@ export const LessonCard = ({ level, index, isDivSelected }: LessonCardProps) => 
                 Level {Number(index) + 1}
             </Typography>
 
-            <Grid container mt="18px">
+            <Grid container mt="20px">
                 {
                     level.map((course, i) => {
                         const circleRounded = course.lsID <= 9 ? "50%" : "30px";
@@ -677,13 +714,12 @@ export const LessonCard = ({ level, index, isDivSelected }: LessonCardProps) => 
                                         //minHeight: "475px",
                                         maxWidth: "350px",
                                         //   width:"252px",
-
                                         display: "flex",
                                         flexDirection: "column",
                                         justifyContent: "space-between",
                                         ...((course.isActive) && { background: "linear-gradient(135deg, #84A9FF 0%, #1939B7 100%)" }),
-                                        ...(((!course.isActive) && (course.nextLessonToBeAccess !== course.lsID) && isLight) && { backgroundColor: pellete.light.grey[200] }),
                                         ...((course.isExpired && isLight) && { backgroundColor: pellete.light.grey[0] }),
+                                        ...(((!course.isActive) && (!course.isExpired) && isLight && isDivSelected) && { backgroundColor: pellete.light.grey[200] }),
                                         boxShadow: getShadow(course),
                                     }}>
 
@@ -791,7 +827,7 @@ export const LessonCard = ({ level, index, isDivSelected }: LessonCardProps) => 
 
                                         {/* bottom buttons */}
                                         <Stack direction={"row"} justifyContent="space-around">
-                                            {getButtons(course.lsID, course)}
+                                            {getButtonsJSX(course.lsID, course)}
                                         </Stack>
 
                                     </Stack>
