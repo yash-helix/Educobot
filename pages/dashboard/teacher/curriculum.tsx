@@ -95,7 +95,7 @@ import uuidv4 from "../../../utils/uuidv4";
 
 // ----------------------------------------------------------------------
 
-Curriculum2_1.getLayout = function getLayout(page: React.ReactElement) {
+Curriculum.getLayout = function getLayout(page: React.ReactElement) {
   return <Layout>{page}</Layout>;
 };
 
@@ -109,7 +109,7 @@ const expiredLessons = [
   {id:"8bedf833-bde2-433c-9930-f9f8947f2631", otp:1263},
 ];
 
-export default function Curriculum2_1() {
+export default function Curriculum() {
   const { themeStretch } = useSettings();
   const theme = useTheme();
   const { push } = useRouter();
