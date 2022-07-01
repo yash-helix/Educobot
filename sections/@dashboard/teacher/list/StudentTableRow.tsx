@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 // @mui
 import { useTheme } from "@mui/material/styles";
 import {
@@ -20,13 +20,12 @@ import { TableMoreMenu } from "../../../../components/table";
 
 // ----------------------------------------------------------------------
 type row = {
-  id?: string;
-  fullName?: string;
-  email?:string;
-  status?: number;
-  incomplete?: number;        
-  points?: number;
-  rollNo?:number;
+  sdFName?: string;
+  edStatus?: string;
+  Incomplete?: number;        
+  TotalCoins?: number;
+  sdRollNo?:number;
+  Complete?:number
 };
 
 type Props = {
@@ -35,6 +34,7 @@ type Props = {
   onEditRow: VoidFunction;
   onSelectRow: VoidFunction;
   onDeleteRow: VoidFunction;
+  page?: string,
 };
 
 export default function StudentTableRow({
@@ -43,12 +43,15 @@ export default function StudentTableRow({
   onEditRow,
   onSelectRow,
   onDeleteRow,
+  page,
 }: Props) {
   const theme = useTheme();
 
-  const { fullName, email, status, incomplete, points, rollNo } = row;
+  const { sdFName, edStatus, Incomplete, TotalCoins, sdRollNo } = row;
 
   const [openMenu, setOpenMenuActions] = useState<HTMLElement | null>(null);
+
+  const [status, setStatus] = useState({color:"default", text:""});
 
   const handleOpenMenu = (event: React.MouseEvent<HTMLElement>) => {
     setOpenMenuActions(event.currentTarget);
@@ -57,6 +60,25 @@ export default function StudentTableRow({
   const handleCloseMenu = () => {
     setOpenMenuActions(null);
   };
+  
+
+  const getStatus = ()=>{
+    if(edStatus === 'C'){
+      setStatus({color:"success", text:"Done"})
+    }
+    else if(edStatus === 'L'){
+      if(page=='ViewReport') setStatus({color:"error", text:"Incomplete"})
+      else setStatus({color:"warning", text:"Doing"})
+    }
+    else if(edStatus === 'X'){
+      if(page=='ViewReport') setStatus({color:"error", text:"Incomplete"})
+      else setStatus({color:"default", text:"Not Started"})
+    }
+  }
+
+  useEffect(() => {
+    getStatus();
+  },[]);
 
   return (
     <TableRow hover selected={selected}>
@@ -68,43 +90,32 @@ export default function StudentTableRow({
         {/* <Avatar alt={name} src={avatarUrl} sx={{ mr: 2 }} /> */}
         <Stack>
           <Typography variant="subtitle2" noWrap>
-            {fullName}
+            {sdFName}
           </Typography>
-          <Typography variant="subtitle2" noWrap color={"text.secondary"}>
+          {/* <Typography variant="subtitle2" noWrap color={"text.secondary"}>
             {email}
-          </Typography>
+          </Typography> */}
         </Stack>
       </TableCell>
 
-      <TableCell align="left">{rollNo}</TableCell>
+      <TableCell align="left">{sdRollNo}</TableCell>
 
       <TableCell align="left" sx={{ textTransform: "capitalize" }}>
         <Label
           variant={theme.palette.mode === "light" ? "ghost" : "filled"}
-          color={
-            (status === 1 && "success") ||
-            (status === 2 && "warning") ||
-            (status === 3 && "default") ||
-            (status === 4 && "error") ||
-            "default"
-          }
+          color={status.color}
           sx={{ textTransform: "capitalize", fontWeight:550, fontSize:"14px" ,fontFamily:"Public Sans" }}
         >
-          {
-            (status === 1 && "Done") ||
-            (status === 2 && "Doing") ||
-            (status === 3 && "Not Started") ||
-            (status === 4 && "Incomplete")
-          }
+          {status.text}
         </Label>
       </TableCell>
 
       <TableCell align="left" sx={{ textTransform: "capitalize" }}>
-        {incomplete}
+        {Incomplete}
       </TableCell>
 
       <TableCell align="left" sx={{ textTransform: "capitalize" }}>
-        {points}
+        {TotalCoins}
       </TableCell>
 
       {/* <TableCell align="right">

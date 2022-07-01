@@ -53,6 +53,7 @@ import {
   StudentTableRow,
 } from "../../../sections/@dashboard/teacher/list";
 import axios from "axios";
+import { isArray } from "lodash";
 
 // ----------------------------------------------------------------------
 
@@ -62,13 +63,13 @@ const classArr = ["all", "6th", "7th", "8th", "9th", "10th"];
 const divisionArr = ["all", "A", "B", "C", "D", "E"];
 // ----------------------------------------------------------------------
 
-ProgressStudentList.getLayout = function getLayout(page: React.ReactElement) {
+ReportStudentList.getLayout = function getLayout(page: React.ReactElement) {
   return <Layout>{page}</Layout>;
 };
 
 // ----------------------------------------------------------------------
 
-export default function ProgressStudentList(props) {
+export default function ReportStudentList(props) {
 
   const [tableData, setTableData] = useState(props.students);
   
@@ -125,6 +126,17 @@ export default function ProgressStudentList(props) {
 
   useEffect(() => {
     // getStudents();
+    const SetTableData = ()=>{
+        let arr = props.students.map(student=>{
+            if(student.edStatus=="X" || student.edStatus=="L")
+            {
+                return {...student, edStatus:"L"}
+            }
+            else return student
+        });
+        setTableData(arr);
+    }
+    SetTableData();
   }, []);
 
 
@@ -210,42 +222,43 @@ export default function ProgressStudentList(props) {
     (!dataFiltered.length && !!filterStatus) ||
     (!dataFiltered.length && !!filterCourse);
 
-  const getLengthByStatus = (edStatus: string) =>{
-    return tableData.filter((obj) => obj.edStatus == edStatus).length;
+  const getLengthByStatus = (edStatus: string, edStatus1?:string, edStatus2?:string) =>{
+    return tableData.filter((obj) => (obj.edStatus == edStatus) || (obj.edStatus == edStatus1) || 
+    (obj.edStatus == edStatus2)).length;
   }
 
-  const TABS = [
-    {
-      value: "all",
-      label: "All",
-      color: "default",
-      count: tableData.length,
-    },
-    {
-      value: "X",
-      label: "Not Started",
-      color: "default",
-      count: getLengthByStatus('X'),
-    },
-    {
-      value: "L",
-      label: "Doing",
-      color: "warning",
-      count: getLengthByStatus('L'),
-    },
-    {
-      value: "C",
-      label: "Done",
-      color: "success",
-      count: getLengthByStatus('C'),
-    },
-    {
-      value: "",
-      label: "Incomplete",
-      color: "error",
-      count: getLengthByStatus(''),
-    },
-  ] as const;
+    const TABS = [
+        {
+            value: "all",
+            label: "All",
+            color: "default",
+            count: tableData.length,
+        },
+        {
+            value: "X",
+            label: "Not Started",
+            color: "default",
+            count: getLengthByStatus('X'),
+        },
+        {
+            value: "",
+            label: "Doing",
+            color: "warning",
+            count: getLengthByStatus(''),
+        },
+        {
+            value: "C",
+            label: "Done",
+            color: "success",
+            count: getLengthByStatus('C'),
+        },
+        {
+            value: "L",
+            label: "Incomplete",
+            color: "error",
+            count: getLengthByStatus('L'),
+        },
+    ] as const;
   
 
   return (
@@ -339,7 +352,7 @@ export default function ProgressStudentList(props) {
                         onSelectRow={() => onSelectRow(`${row.sdRollNo}`)}
                         onDeleteRow={() => handleDeleteRow(`${row.sdRollNo}`)}
                         onEditRow={() => handleEditRow(row.sdFName)}
-                        page={"ViewProgress"}
+                        page={"ViewReport"}
                       />
                     ))}
 
@@ -441,8 +454,13 @@ function applySortFilter({
 
   if (filterCourse !== "all") {
     tableData = tableData.filter(
-      (item: Record<string, any>) => item.edStatus == filterCourse
-    );
+      (item: Record<string, any>) => {
+          if(isArray(filterCourse))
+          {
+            return filterCourse.includes(item.edStatus)
+          }
+          else return item.edStatus == filterCourse
+      });
   }
   return tableData;
 }
