@@ -132,7 +132,7 @@ export default function ContactUs() {
               <Box sx={{ flexGrow: 1 }}>
                 <Typography variant="h4" gutterBottom>
                   Know more about edo
-                  <span style={{ fontWeight: 800 }}>COBOT</span>
+                  <Typography variant="h4" style={{ fontWeight: "bold", display: "inline" }}>COBOT</Typography>
                 </Typography>
                 <Typography sx={{ color: "text.secondary" }}>
                   Logic. Code. Simplified
