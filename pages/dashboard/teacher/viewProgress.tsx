@@ -209,9 +209,12 @@ const legends = [
 
 export default function ViewProgress() {
     const {query} = useRouter();
+    const router = useRouter();
+
     const { themeStretch } = useSettings();
     const [lessonData, setLessonData] = useState({lsName:null, lsLessonNo:null});
     const [data, setData] = useState(studentsDummyData);
+    const [students, setStudents] = useState([]);
 
     const getLessonByID = async (id) => {
         try {
@@ -231,8 +234,31 @@ export default function ViewProgress() {
             console.log(error)
         }
     }
+
+    // students info
+    const getStudentsInfo = async() => {
+        try {
+            const body = {
+                "schoolID":localStorage.getItem("schoolID"),
+                "std": query.class,
+                "div": query.div,
+                "lessonID":query.lsID,
+                "otp":query.otp
+            }
+            const res = await axios.post("https://api.educobot.com/lessonsRoute/getStudentsProgress", body);
+            if(res.data.data.length>0)
+            {
+                setStudents(res.data.data)
+            }
+        }
+        catch (error) {
+            console.log(error)
+        }
+    }
+
     useEffect(() => {
         query.lsID && getLessonByID(query.lsID);
+        query.lsID && getStudentsInfo();
     },[])
     
 
@@ -252,8 +278,9 @@ export default function ViewProgress() {
                         alignItems="center"
                         spacing={0.6}>
                         <Iconify
+                            onClick={()=>router.back()}
                             icon={"eva:arrow-ios-back-fill"}
-                            sx={{width:25, height:25, color:pellete.light.grey[600]}}
+                            sx={{width:25, height:25, cursor:"pointer" ,color:pellete.light.grey[600]}}
                         />
                         <Typography variant='h5' component="h6" fontFamily={"Public Sans"}>
                             {lessonData?.lsName}{((query.otp!='undefined') && (query.otp!='false')) ? `, OTP ${query.otp}` : ""}
@@ -282,26 +309,29 @@ export default function ViewProgress() {
                 {/* students */}
                 <Grid container spacing={.8} mt={3.2} gap={1.3} gridTemplateColumns="repeat(10, 1fr)" gridTemplateRows="repeat(4, 1fr)">
                     {
-                        data.map((student, i)=>{
-                            if(student.status==1){
+                        students.map((student, i)=>{
+                            if(student.edStatus=="C"){
                                 return <UserIcon UserIcon={<UserGreen width={100} height={100}/>} student={student}/>
                             }
-                            else if(student.status==2){
+                            else if(student.edStatus=="L"){
                                 return <UserIcon UserIcon={<UserYellow width={100} height={100}/>} student={student}/>
                             }
-                            else if(student.status==3){
+                            else if(student.edStatus=="X"){
                                 return <UserIcon UserIcon={<UserGrey width={100} height={100}/>} student={student}/>
                             }
-                            else{
-                                return <UserIcon UserIcon={<UserRed width={100} height={100}/>} student={student}/>
-                            }
+                            // else if(student.edStatus=="L"){
+                            //     return <UserIcon UserIcon={<UserRed width={100} height={100}/>} student={student}/>
+                            // }
                         })
                     }
                 </Grid>
 
 
                 {/* students table */}
-                <ProgressStudentList lessonNo={lessonData?.lsLessonNo}/>
+                {
+                    students.length>0 &&
+                    <ProgressStudentList lessonNo={lessonData?.lsLessonNo} students={students}/>
+                }
 
             </Container>
         </Page>
@@ -310,21 +340,22 @@ export default function ViewProgress() {
 
 type PropTypes = {
     UserIcon?: React.ReactNode,
-    student:{status:number, roll:string},
+    student:{edStatus:string, sdRollNo:string},
 }
 
 const UserIcon : React.FC<PropTypes> = (props) => {
     const {UserIcon} = props;
-    return <Grid item key={props.student?.roll}>
+    return <Grid item key={props.student?.sdRollNo}>
         <Stack sx={{position:'relative'}}>
             {UserIcon}
             <Typography variant='h5' component={"h4"} sx={{
                 position: 'absolute',
                 bottom: 11,
                 color: '#fff',
-                left:' 45%',
+                left: '50%',
+                transform:"translate(-50%)"
             }}>
-                {props.student?.roll}
+                {props.student?.sdRollNo}
             </Typography>
         </Stack>
     </Grid>

@@ -6,8 +6,7 @@ import { ColorSchema } from '../theme/palette';
 
 // ----------------------------------------------------------------------
 
-type LabelColor = 'default' | 'primary' | 'secondary' | 'info' | 'success' | 'warning' | 'error';
-
+type LabelColor = 'default' | 'primary' | 'secondary' | 'info' | 'success' | 'warning' | 'error' | string;
 type LabelVariant = 'filled' | 'outlined' | 'ghost';
 
 const RootStyle = styled('span')(
@@ -24,18 +23,18 @@ const RootStyle = styled('span')(
     const isLight = theme.palette.mode === 'light';
     const { color, variant } = ownerState;
 
-    const styleFilled = (color: ColorSchema) => ({
+    const styleFilled = (color: ColorSchema | string) => ({
       color: theme.palette[color].contrastText,
       backgroundColor: theme.palette[color].main,
     });
 
-    const styleOutlined = (color: ColorSchema) => ({
+    const styleOutlined = (color: ColorSchema | string) => ({
       color: theme.palette[color].main,
       backgroundColor: 'transparent',
       border: `1px solid ${theme.palette[color].main}`,
     });
 
-    const styleGhost = (color: ColorSchema) => ({
+    const styleGhost = (color: ColorSchema | string) => ({
       color: theme.palette[color][isLight ? 'dark' : 'light'],
       backgroundColor: alpha(theme.palette[color].main, 0.16),
     });

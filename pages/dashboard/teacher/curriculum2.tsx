@@ -96,15 +96,13 @@ const expiredLessons = [
     { spLessonID: "4bda4814-a2b1-4c4f-b102-eda5181bd0f8", otp: 3245 },
     { spLessonID: "e0c38e50-cbb3-455f-ae16-d737fc624b24", otp: 1234 }
 ];
+let expired_Lessons = [];
+let open_lessons = [];
 
 export default function Curriculum2_1() {
     const { themeStretch } = useSettings();
     const theme = useTheme();
     const { push } = useRouter();
-
-    const [CourseOTP, setCourseOTP] = useState("");
-    const [OTPButton, setOTPButton] = useState(false);
-
     
     const [closeAlert, setCloseAlert] = useState(true);
     const [closeAlertMsg, setCloseAlertMsg] = useState("");
@@ -118,6 +116,8 @@ export default function Curriculum2_1() {
 
     const [MasterLessons, setMasterLessons] = useState([]);
     const [LevelArray, SetLevelArray] = useState([]);
+
+    const [CourseOTP, setCourseOTP] = useState(undefined);
 
     const token = localStorage.getItem("accessToken");
 
@@ -138,7 +138,10 @@ export default function Curriculum2_1() {
                     });
 
                 let currentMaxLesson = response.data.data[0]?.maxLessonNo;
-                allLessons[currentMaxLesson].isActive = true
+                if(allLessons[currentMaxLesson].isExpired != true){
+                    allLessons[currentMaxLesson].isActive = true
+                }
+
                 return allLessons;
             }
             catch (error) {
@@ -148,18 +151,35 @@ export default function Curriculum2_1() {
         }
     }
 
+
     const getExpired = async (allLessons) => {
         const token = localStorage.getItem("accessToken");
+        const schoolID = localStorage.getItem("schoolID");
+
         if (classValue !== "Class" && divisionValue !== "Division") {
             try {
-                for (let i = 0; i < expiredLessons.length; i++) {
+                const response = await axios.post("https://api.educobot.com/sessionRoute/getClosedPIN",
+                    { "std": classValue, "div": divisionValue, "course": CourseName, "schoolID": schoolID },
+                    {
+                        headers: {
+                            "authorization": `Bearer ${token}`
+                        }
+                    });
+
+                expired_Lessons = response.data.map(obj => obj.sdLesson);
+
+                // expired_Lessons = [];
+                // response.data.map(obj => obj.Lessons.map(lesson=>lesson.sdLesson)).map(arr => arr.map(id => expired_Lessons.push(id)));
+
+                expired_Lessons = Array.from(new Set(expired_Lessons));
+
+                for (let i = 0; i < expired_Lessons.length; i++) {
                     for (let j = 0; j < allLessons.length; j++) {
-                        if (expiredLessons[i]?.spLessonID == allLessons[j].lsID) {
+                        if (expired_Lessons[i] == allLessons[j].lsID) {
                             allLessons[j]['isExpired'] = true;
                         }
                     }
                 }
-
                 return allLessons;
             }
             catch (error) {
@@ -169,47 +189,93 @@ export default function Curriculum2_1() {
         }
     }
 
-    const getAllLessonData1 = async () => {
-        let body = { courseName: CourseName }
-        await axios.post("https://api.educobot.com/lessonsRoute/getLessonsByCourse", body,
-            {
-                headers: { 'Content-Type': 'application/json' }
-            })
-            .then(async (res) => {
-                if (res.status === 200) {
-                    let allLessonsArr = res.data.map(obj => obj.Lessons);
-                    const allLessons = allLessonsArr.flatMap(obj => obj);
 
-                    // let updatedAllLessons = await getExpiredLessons(allLessons);
-                    // updatedAllLessons = await GetOpenPINs(updatedAllLessons);
-                    // updatedAllLessons = await GetLatestActiveLesson(allLessons);
+    const getOpenLessons = async (allLessons) => {
+        const schoolID = localStorage.getItem("schoolID");
 
-                    // setMasterLessons([...updatedAllLessons]);
-                    
-                    let updatedLessons = await getExpired(allLessons);
-                    updatedLessons = await getMax(updatedLessons);
-                    setMasterLessons([...updatedLessons]);
+        if (classValue !== "Class" && divisionValue !== "Division" && schoolID) {
+            let body = { "std": classValue, "div": divisionValue, "course": CourseName, "schoolID": schoolID }
+
+            try {
+                const res = await axios.post("https://api.educobot.com/sessionRoute/getOpenPIN", body,
+                {
+                    headers: { 'Content-Type': 'application/json', "authorization": `Bearer ${token}` }
+                });
+                
+                // set otp if available
+                if(res.data[0]?.spPIN){
+                    setCourseOTP(res.data[0]?.spPIN)
                 }
-            })
-            .catch(err => {
-                console.log(err)
-            })
+
+                if(res.data[0]?.Lessons.length > 0)
+                {
+                    let openLessons = res.data[0]?.Lessons.map(obj => obj?.sdLesson);
+                    open_lessons = openLessons;
+
+                    for (let i = 0; i < openLessons.length; i++) {
+                        for (let j = 0; j < allLessons.length; j++) {
+                            if (openLessons[i] == allLessons[j].lsID) {
+                                allLessons[j]['isOpenAndActive'] = true;
+                            }
+                            else {
+                                if (allLessons[j]?.isActive || allLessons[j]?.isExpired)
+                                    allLessons[j]['isLocked'] = true;
+                            }
+                        }
+                    }
+
+                    // to make the lesson after the latest opened lesson accessible
+                    const lastActiveAndOpenLesson = allLessons.map(l => l.isOpenAndActive).lastIndexOf(true);
+                    allLessons[lastActiveAndOpenLesson+1]['nextLessonToUnlock'] = true
+
+                    return allLessons;
+                }
+                else {
+                    // setCourseOTP(undefined);
+                    for (let j = 0; j < allLessons.length; j++) {
+                        if (allLessons[j]?.isActive || allLessons[j]?.isExpired)
+                            allLessons[j]['isLocked'] = true;
+                    }
+                    return allLessons;
+                }
+            }
+            catch (error) {
+                console.log(error)
+                return allLessons;
+            }
+        }
     }
 
-    const getAllLessonTheLockButton = async () => {
-        const get = () => {
-            let allLessons = MasterLessons;
-            allLessons = allLessons.map(lesson => {
-                if (lesson?.isExpired == true || lesson?.isActive == true) {
-                    return { ...lesson, isLocked: true }
-                }
-                else return lesson
-            })
-            return allLessons
-        }
 
-        let allLessons = get();
-        setMasterLessons([...allLessons])
+    const getAllLessonData1 = async () => {
+        // reseting all
+        expired_Lessons = [];
+        open_lessons = [];
+        setCourseOTP(undefined);
+
+        let body = { courseName: CourseName }
+
+        if (divisionValue !== "Division") {
+            await axios.post("https://api.educobot.com/lessonsRoute/getLessonsByCourse", body,
+                {
+                    headers: { 'Content-Type': 'application/json' }
+                })
+                .then(async (res) => {
+                    if (res.status === 200) {
+                        let allLessonsArr = res.data.map(obj => obj.Lessons);
+                        const allLessons = allLessonsArr.flatMap(obj => obj);
+
+                        let updatedLessons = await getExpired(allLessons);
+                        updatedLessons = await getOpenLessons(updatedLessons);
+                        // updatedLessons = await getMax(updatedLessons);
+
+                        setMasterLessons([...updatedLessons]);
+                    }
+                })
+                .catch(err => {
+                    console.log(err)
+                })
+        }
     }
 
 
@@ -244,6 +310,64 @@ export default function Curriculum2_1() {
     }
 
 
+    // generate otp
+    const generateOTP = async () => {
+        if (CLASS_DATA.includes(classValue) && DIVISION_DATA.includes(divisionValue)) {
+            let schoolID = localStorage.getItem("schoolID");
+
+            let body = {
+                "std": `${classValue}`,
+                "div": `${divisionValue}`,
+                "course": `${CourseName}`,
+                "schoolID": schoolID
+            }
+            try {
+                const res = await axios.post("https://api.educobot.com/sessionRoute/generateOTP",
+                    body,
+                    { headers: { 'Content-Type': 'application/json', 'authorization': `Bearer ${localStorage.getItem("accessToken")}` } })
+
+                setCourseOTP(res.data?.otp);
+
+                setOTPsnackbar(true) //info snackbar
+                setTimeout(() => {
+                    setOTPsnackbar(false);
+                }, 15000);
+            }
+            catch (err) {
+                setCloseAlertMsg("Unexpected Error Occurred");
+                setCloseAlert(false);
+            }
+        }
+        else {
+            setCloseAlertMsg("Please select the class and division");
+            setCloseAlert(false);
+        }
+    }
+
+
+    // unlock the lesson
+    const Unlock = async (lsID: any) => {
+        try {
+            const body = {
+                "userID": localStorage.getItem("userID"),
+                "otp": CourseOTP,
+                "std": classValue,
+                "div": divisionValue,
+                "course": CourseName,
+                "lessonID": lsID,
+                "operation": "I",
+                "schoolID": localStorage.getItem("schoolID")
+            }
+            const res = await axios.post("https://api.educobot.com/sessionRoute/postOTPLesson", body)
+            console.log(res)
+            getAllLessonData1();
+        }
+        catch (error) {
+            console.log("Error in Unlocking Lesson", error)
+        }
+    }
+
+
     useEffect(() => {
         getAllLessonData();
     }, [CourseName]);
@@ -259,26 +383,6 @@ export default function Curriculum2_1() {
     useEffect(() => {
         mapMasterLessonsByLevels();
     }, [MasterLessons]);
-
-
-    // otp if present in local
-    useEffect(() => {
-        const otp = JSON.parse(localStorage.getItem("CourseOTP"));
-        const now = new Date();
-        
-        if (otp !== null) {
-            const then = otp ? new Date(otp?.generateDate) : new Date();
-            const msBetweenDates = Math.abs(then.getTime() - now.getTime());
-            const hoursBetweenDates = msBetweenDates / (60 * 60 * 1000);
-            if (hoursBetweenDates < 24) {
-                setCourseOTP(otp?.otp);
-                getAllLessonTheLockButton();
-                setOTPButton(true);
-            }
-            else setOTPButton(true)
-        }
-        else setOTPButton(true)
-    }, [])
     
 
     // on error occurred
@@ -294,8 +398,6 @@ export default function Curriculum2_1() {
     }, [closeAlert])
 
 
-
-
     // opening of dropdown
     const handleOpenTitle = (event: React.MouseEvent<HTMLButtonElement>) => {
         setOpenTitleDDL(event.currentTarget);
@@ -305,7 +407,6 @@ export default function Curriculum2_1() {
     const handleCloseClass = (event: any) => {
         event.target.value !== classValue ?
             (setClassValue(event.target.value), setDivisionValue("Division")) : ""
-        setOTPButton(false)
     };
 
     const handleCloseDivision = (event: any) => {
@@ -317,68 +418,6 @@ export default function Curriculum2_1() {
         setCourseName(title)
         setOpenTitleDDL(null)
     };
-
-
-
-    // generate OTP
-    const getOTP = async() => {
-        let body = {
-            "std": `${classValue}`,
-            "div": `${divisionValue}`,
-            "course": `${CourseName}`
-        }
-        try {
-            const res = await axios.post("https://api.educobot.com/sessionRoute/generateOTP",
-                body,
-                { headers: { 'Content-Type': 'application/json', 'authorization': `Bearer ${localStorage.getItem("accessToken")}` } })
-            setCourseOTP(res.data?.otp);
-            setOTPButton(false);
-
-            const obj = {
-                otp: res.data?.otp,
-                generateDate: new Date()
-            }
-            localStorage.setItem("CourseOTP", JSON.stringify(obj));
-
-            setOTPsnackbar(true) //info snackbar
-            setTimeout(() => {
-                setOTPsnackbar(false);
-            }, 15000);
-        }
-        catch (err) {
-            setCloseAlertMsg("Unexpected Error Occurred");
-            setCloseAlert(false);
-        }
-    }
-
-    const generateOTP = () => {
-        getAllLessonTheLockButton();
-
-        if (CLASS_DATA.includes(classValue) && DIVISION_DATA.includes(divisionValue)){
-            const otp = JSON.parse(localStorage.getItem("CourseOTP"));
-            const now = new Date();
-            
-            if (otp) {
-                const then = otp ? new Date(otp?.generateDate) : new Date();
-                const msBetweenDates = Math.abs(then.getTime() - now.getTime());
-                const hoursBetweenDates = msBetweenDates / (60 * 60 * 1000);
-                if(hoursBetweenDates < 24)
-                {
-                    setCourseOTP(otp.otp);
-                }
-                else{
-                    getOTP();
-                }
-            }
-            else {
-                getOTP();
-            }
-        }
-        else {
-            setCloseAlertMsg("Please select the class and division");
-            setCloseAlert(false);
-        }
-    }
 
 
     return (
@@ -508,7 +547,7 @@ export default function Curriculum2_1() {
 
                         {/* otp button */}
                         {
-                            <Button variant="contained" color="primary" onClick={generateOTP}>
+                            <Button variant="contained" color="primary" onClick={generateOTP} disabled={(CourseOTP!=undefined && CourseOTP)}>
                                 Generate OTP
                             </Button>
                         }
@@ -540,6 +579,13 @@ export default function Curriculum2_1() {
                                     level={level}
                                     index={index}
                                     isDivSelected={true}
+                                    Unlock={Unlock}
+                                    expired_Lessons={expired_Lessons}
+                                    open_lessons = {open_lessons}
+                                    CourseOTP = {CourseOTP}
+                                    classValue = {classValue}
+                                    divisionValue = {divisionValue}
+                                    previousLevel = {index>=1 && LevelArray[index-1]}
                                 />
                             );
                         })}
@@ -557,10 +603,18 @@ export default function Curriculum2_1() {
 type LessonCardProps = {
     level: any,
     index: Number,
-    isDivSelected: boolean
+    isDivSelected: boolean,
+    Unlock?: (lsID) => Promise<void>,
+    expired_Lessons?: any,
+    open_lessons?: any,
+    CourseOTP?: string,
+    divisionValue?: string,
+    classValue?: string
+    previousLevel?: any
 }
 
-export const LessonCard = ({ level, index, isDivSelected }: LessonCardProps) => {
+export const LessonCard = (
+    { level, index, isDivSelected, Unlock, expired_Lessons, open_lessons, CourseOTP, divisionValue, classValue, previousLevel}: LessonCardProps) => {
     const theme = useTheme();
     const isLight = theme.palette.mode === "light";
     let tags = ["tag1", "tag2", "tag3", "tag4"];
@@ -597,82 +651,65 @@ export const LessonCard = ({ level, index, isDivSelected }: LessonCardProps) => 
         return `${date} ${month} ${year}, ${hours}:${minutes} ${period}`;
     }
 
-    const getButtonsJSX = (lsID: string, course: any) => {
-        // locked button lesson
-        if(course.isLocked == true && course?.isActive != true){
+    const getButtonsJSX = (lsID: string, course: any, maxActiveLesson:boolean) => {
+
+        // active or opened
+        if(course?.isActive || course?.isOpenAndActive){
             return <>
-                <Button variant="outlined" fullWidth color="inherit" sx={{ margin: "10px" }}
+                <Button fullWidth variant="contained" color="inherit" sx={{ marginY: "10px" }} 
                 onClick={()=>openLesson(lsID, course)}>
                     Open
                 </Button>
-                <Button variant="outlined" fullWidth color="error" sx={{ margin: "10px" }}>
+            </>
+        }
+
+        // locked and expired
+        else if((course?.isLocked && course?.isExpired && CourseOTP)){
+            return <>
+                <Button variant="outlined" fullWidth color="inherit" sx={{ marginY: "10px" }}
+                onClick={()=>openLesson(lsID, course)}>
+                    Open
+                </Button>
+                <Button variant="outlined" fullWidth color="error" sx={{ marginY: "10px" }} 
+                onClick={()=>Unlock(lsID)}>
                     <LockIcon fill1="#FF4842" fill2="#FF4842" width="20px" height="20px"/>
                 </Button>
             </>
         }
 
-        // active and locked both
-        else if(course?.isLocked == true && course?.isActive == true){
+        // locked and active and next-lesson to be accessible
+        else if((course?.isLocked && course?.isActive) || course?.nextLessonToUnlock){
+            const openVariant = course?.nextLessonToUnlock ? "outlined" : "contained"
+
             return <>
-                <Button variant="contained" fullWidth color="inherit" sx={{ margin: "10px" }}
+                <Button variant={openVariant} fullWidth color="inherit" sx={{ marginY: "10px" }}
                 onClick={()=>openLesson(lsID, course)}>
                     Open
                 </Button>
-                <Button variant="contained" fullWidth color="error" sx={{ margin: "10px" }}>
+                <Button variant="contained" fullWidth color="error" sx={{ marginY: "10px" }} 
+                onClick={()=>Unlock(lsID)}>
                     <LockIcon fill1="#FFF" fill2="#FFF" width="20px" height="20px"/>
                 </Button>
             </>
         }
 
-        // active & has otp
-        else if (course?.isActive == true && course?.otp) {
+        //max and locked
+        else if(maxActiveLesson && course?.isLocked){
             return <>
-                <Button fullWidth variant="contained" color="inherit" sx={{ margin: "10px" }} 
+                <Button variant={"contained"} fullWidth color="inherit" sx={{ marginY: "10px" }}
                 onClick={()=>openLesson(lsID, course)}>
                     Open
                 </Button>
-                <Button fullWidth variant="contained" color="error" sx={{ margin: "10px" }}>
-                    Reset OTP
-                </Button>
-            </>
-        }
-
-        // active & don't have otp
-        else if (course?.isActive == true) {
-            return <>
-                <Button variant="contained" fullWidth color="inherit" sx={{ margin: "10px" }}
-                onClick={()=>openLesson(lsID, course)}>
-                    Open
-                </Button>
-            </>
-        }
-
-        // next lesson to be able to get otp
-        else if (course.nextLessonToBeAccess == true) {
-            return <>
-                <Button variant="outlined" fullWidth color="inherit" sx={{ margin: "10px" }}
-                onClick={()=>openLesson(lsID, course)}>
-                    Open
-                </Button>
-                <Button variant="outlined" fullWidth color="inherit" sx={{ margin: "10px" }}>
-                    Get OTP
-                </Button>
-            </>
-        }
-
-        // expired lesson
-        else if (course.isExpired && isDivSelected == true) {
-            return <>
-                <Button fullWidth variant="outlined" color="inherit" sx={{ margin: "10px" }}
-                onClick={()=>openLesson(lsID, course)}>
-                    Open
+                <Button variant="contained" fullWidth color="error" sx={{ marginY: "10px" }} 
+                onClick={()=>Unlock(lsID)}>
+                    <LockIcon fill1="#FFF" fill2="#FFF" width="20px" height="20px"/>
                 </Button>
             </>
         }
 
         else {
             return <>
-                <Button variant="outlined" fullWidth color="inherit" sx={{ margin: "10px" }}
+                <Button variant={maxActiveLesson?"contained":"outlined"} fullWidth color="inherit" sx={{ marginY: "10px" }}
                 onClick={()=>openLesson(lsID, course)}>
                     Open
                 </Button>
@@ -684,13 +721,12 @@ export const LessonCard = ({ level, index, isDivSelected }: LessonCardProps) => 
         if (course.isExpired) {
             return "0px 12px 24px -4px rgba(145, 158, 171, 0.12), 0px 0px 2px 0px rgba(145, 158, 171, 0.2)"
         }
-        else if (course.isActive) {
+        else if (course.isActive || course.isOpenAndActive || course?.maxActiveLesson) {
             return "0px 8px 16px 0px rgba(51, 102, 255, 0.24)"
         }
         else return "0px 12px 24px -4px rgba(145, 158, 171, 0.12), 0px 0px 2px 0px rgba(145, 158, 171, 0.2)"
     }
     // let id = uuidv4();
-
     return (
         <Box mt={"40px"}>
             <Typography variant="h6" component={"h1"} paddingLeft={1}>
@@ -703,6 +739,35 @@ export const LessonCard = ({ level, index, isDivSelected }: LessonCardProps) => 
                         const circleRounded = course.lsID <= 9 ? "50%" : "30px";
                         const circleSize = course.lsID <= 9 ? "26px" : "30px";
 
+                        // lesson after latest opened lesson to be activated i.e max-active-lesson
+                        if (isDivSelected)
+                        {
+                            if (expired_Lessons?.includes(level[i - 1]?.lsID) &&
+                            !expired_Lessons?.includes(course?.lsID) &&
+                            !open_lessons?.includes(course.lsID)){
+                                course = { ...course, maxActiveLesson: true }
+                                if(CourseOTP) course = { ...course, isLocked: true }
+                            }
+                            else if (course.lsLessonNo == 1 &&
+                                !expired_Lessons?.includes(course?.lsID) &&
+                                !open_lessons?.includes(course?.lsID)){
+                                course = { ...course, maxActiveLesson: true }
+                                if(CourseOTP) course = { ...course, isLocked: true }
+                            }
+
+                            // below logic to make the first lesson of new level active if not expired and opened
+                            if (index >= 1) {
+                                if (i == 0) {
+                                    if (expired_Lessons?.includes(previousLevel[previousLevel.length-1]?.lsID) &&
+                                        !expired_Lessons?.includes(course?.lsID) &&
+                                        !open_lessons?.includes(course.lsID)) {
+                                        course = { ...course, maxActiveLesson: true }
+                                        if (CourseOTP) course = { ...course, isLocked: true }
+                                    }
+                                }
+                            }
+                        }
+
                         return (
                             <Grid item xs={12} sm={6} md={4} lg={4} xl={3} key={`${course?.lsID}`}>
                                 <Card
@@ -711,13 +776,12 @@ export const LessonCard = ({ level, index, isDivSelected }: LessonCardProps) => 
                                         px: 1,
                                         my: 2,
                                         mx: 1,
-                                        //minHeight: "475px",
                                         maxWidth: "350px",
-                                        //   width:"252px",
                                         display: "flex",
                                         flexDirection: "column",
                                         justifyContent: "space-between",
-                                        ...((course.isActive) && { background: "linear-gradient(135deg, #84A9FF 0%, #1939B7 100%)" }),
+                                        backgroundColor: isLight && pellete.light.grey[0],
+                                        ...((course.isActive || course.isOpenAndActive || course.maxActiveLesson) && { background: "linear-gradient(135deg, #84A9FF 0%, #1939B7 100%)" }),
                                         ...((course.isExpired && isLight) && { backgroundColor: pellete.light.grey[0] }),
                                         ...(((!course.isActive) && (!course.isExpired) && isLight && isDivSelected) && { backgroundColor: pellete.light.grey[200] }),
                                         boxShadow: getShadow(course),
@@ -752,7 +816,7 @@ export const LessonCard = ({ level, index, isDivSelected }: LessonCardProps) => 
                                                 variant="h6"
                                                 sx={{
                                                     fontSize: ".8rem",
-                                                    color: course.isActive && pellete.light.grey[100]
+                                                    color: (course.isActive || course.isOpenAndActive || course.maxActiveLesson) && pellete.light.grey[100]
                                                 }}
                                             >
                                                 {course?.lsName}
@@ -776,7 +840,7 @@ export const LessonCard = ({ level, index, isDivSelected }: LessonCardProps) => 
                                                                     ? pellete.light.grey[500_16]
                                                                     : pellete.light.grey[700],
                                                                 borderRadius: "10px",
-                                                                ...(course.isActive == true && {
+                                                                ...((course.isActive || course.isOpenAndActive || course.maxActiveLesson) && {
                                                                     backgroundColor: pellete.light.grey[300],
                                                                     color: pellete.light.grey[800],
                                                                 }),
@@ -795,39 +859,26 @@ export const LessonCard = ({ level, index, isDivSelected }: LessonCardProps) => 
 
                                     <Stack gap={1} padding={1}>
                                         {/* DESCRIPTION */}
-                                        <Typography sx={{ color: course.isActive ? "#fff" : pellete.light.grey[500] }}>
+                                        <Typography sx={{ color: (course.isActive || course.isOpenAndActive || course.maxActiveLesson) ? "#fff" : pellete.light.grey[500] }}>
                                             {course?.lsDesc}
                                         </Typography>
 
-
-                                        {/* VIEW REPORT / PROGRESS BUTTON */}
-                                        {(course.isActive) ?
-                                            course?.otp &&
-                                            // active
-                                            <Stack direction={"column"}>
-                                                {course?.otp &&
-                                                    <>
-                                                        <Typography variant="body2" textAlign="center" color={pellete.light.grey[200]}>
-                                                            Valid till {validity(course?.startAt)}
-                                                        </Typography>
-                                                    </>
-                                                }
-                                                <Link href={PATH_DASHBOARD.teacher.viewProgress + `?lsID=${course?.lsID}&otp=${course?.otp}`}>
-                                                    <Button variant="contained" color="error" fullWidth sx={{ my: 1, fontWeight: 900 }}>
-                                                        View Progress</Button>
-                                                </Link>
-                                            </Stack>
+                                        
+                                        {/* VIEW REPORT */}
+                                        {(course?.isExpired && !course?.isOpenAndActive) ?
+                                            <Link href={PATH_DASHBOARD.teacher.viewReport +`?lsID=${course?.lsID}`+`&otp=${CourseOTP}&`+`div=${divisionValue}&`+`class=${classValue}`}>
+                                                <Button variant="outlined" color="warning" fullWidth sx={{ fontWeight: 900 }}>View report</Button>
+                                            </Link>
                                             :
-                                            // expired
-                                            (course?.isExpired == true && isDivSelected == true) &&
-                                            <Link href={PATH_DASHBOARD.teacher.viewReport + `?lsID=${course?.lsID}`}>
-                                                <Button variant="contained" color="warning" fullWidth sx={{ my: 1, fontWeight: 900 }}>View report</Button>
+                                            course?.isOpenAndActive &&
+                                            <Link href={PATH_DASHBOARD.teacher.viewReport +`?lsID=${course?.lsID}`+`&otp=${CourseOTP}&`+`div=${divisionValue}&`+`class=${classValue}`}>
+                                                <Button variant="contained" color="warning" fullWidth sx={{ fontWeight: 900 }}>View report</Button>
                                             </Link>
                                         }
 
                                         {/* bottom buttons */}
-                                        <Stack direction={"row"} justifyContent="space-around">
-                                            {getButtonsJSX(course.lsID, course)}
+                                        <Stack direction={"row"} justifyContent="space-around" gap={1}>
+                                            {getButtonsJSX(course.lsID, course, course?.maxActiveLesson)}
                                         </Stack>
 
                                     </Stack>
