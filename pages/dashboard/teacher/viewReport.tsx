@@ -37,11 +37,11 @@ import UserRed from '../../../assets/userIcons/UserRed';
 import UserGrey from '../../../assets/userIcons/UserGrey';
 import UserYellow from '../../../assets/userIcons/UserYellow';
 import UserGreen from '../../../assets/userIcons/UserGreen';
-import ProgressStudentList from './viewProgressStudentsTable'
+import ProgressStudentList from './viewReportStudentsTable'
 import axios from 'axios'
 
 
-ViewReport.getLayout = function getLayout(page: React.ReactElement) {
+ViewProgress.getLayout = function getLayout(page: React.ReactElement) {
     return <Layout>{page}</Layout>
 }
 
@@ -49,42 +49,14 @@ ViewReport.getLayout = function getLayout(page: React.ReactElement) {
 const studentsDummyData = [
     {
         roll:"1",
-        status:1
-    },
-    {
-        roll:"2",
-        status:1
-    },
-    {
-        roll:"3",
-        status:1
-    },
-    {
-        roll:"4",
         status:2
     },
     {
-        roll:"5",
-        status:1
+        roll:"2",
+        status:3
     },
     {
-        roll:"6",
-        status:1
-    },
-    {
-        roll:"7",
-        status:1
-    },
-    {
-        roll:"8",
-        status:1
-    },
-    {
-        roll:"9",
-        status:1
-    },
-    {
-        roll:"10",
+        roll:"3",
         status:1
     },
     {
@@ -97,7 +69,35 @@ const studentsDummyData = [
     },
     {
         roll:"2",
+        status:3
+    },
+    {
+        roll:"3",
         status:1
+    },
+    {
+        roll:"4",
+        status:4
+    },
+    {
+        roll:"2",
+        status:3
+    },
+    {
+        roll:"3",
+        status:1
+    },
+    {
+        roll:"4",
+        status:4
+    },
+    {
+        roll:"1",
+        status:2
+    },
+    {
+        roll:"2",
+        status:3
     },
     {
         roll:"3",
@@ -113,7 +113,7 @@ const studentsDummyData = [
     },
     {
         roll:"1",
-        status:1
+        status:2
     },
     {
         roll:"1",
@@ -121,7 +121,7 @@ const studentsDummyData = [
     },
     {
         roll:"2",
-        status:1
+        status:3
     },
     {
         roll:"3",
@@ -129,15 +129,15 @@ const studentsDummyData = [
     },
     {
         roll:"4",
-        status:1
+        status:4
     },
     {
         roll:"1",
-        status:1
+        status:2
     },
     {
         roll:"2",
-        status:1
+        status:3
     },
     {
         roll:"3",
@@ -207,11 +207,14 @@ const legends = [
 
 
 
-export default function ViewReport() {
+export default function ViewProgress() {
     const {query} = useRouter();
+    const router = useRouter()
+    
     const { themeStretch } = useSettings();
     const [lessonData, setLessonData] = useState({lsName:null, lsLessonNo:null});
     const [data, setData] = useState(studentsDummyData);
+    const [students, setStudents] = useState([]);
 
     const getLessonByID = async (id) => {
         try {
@@ -231,10 +234,32 @@ export default function ViewReport() {
             console.log(error)
         }
     }
+
+    // students info
+    const getStudentsInfo = async() => {
+        try {
+            const body = {
+                "schoolID":localStorage.getItem("schoolID"),
+                "std": query.class,
+                "div": query.div,
+                "lessonID":query.lsID,
+                "otp":query.otp
+            }
+            const res = await axios.post("https://api.educobot.com/lessonsRoute/getStudentsProgress", body);
+            if(res.data.data.length>0)
+            {
+                setStudents(res.data.data)
+            }
+        }
+        catch (error) {
+            console.log(error)
+        }
+    }
+
     useEffect(() => {
         query.lsID && getLessonByID(query.lsID);
+        query.lsID && getStudentsInfo();
     },[])
-    
 
 
     return (
@@ -246,14 +271,16 @@ export default function ViewReport() {
                     direction={{ xs: "column", md: "row" }}
                     justifyContent={"space-between"}
                     alignItems={{ xs: "start", md: "center" }}>
+
                 {/* coursename and otp */}
                     <Stack width={{ xs: "100%", sm: "auto" }}
                         direction={"row"}
                         alignItems="center"
                         spacing={0.6}>
                         <Iconify
+                            onClick={()=>router.back()}
                             icon={"eva:arrow-ios-back-fill"}
-                            sx={{width:25, height:25, color:pellete.light.grey[600]}}
+                            sx={{width:25, height:25, cursor:"pointer" ,color:pellete.light.grey[600]}}
                         />
                         <Typography variant='h5' component="h6" fontFamily={"Public Sans"}>
                             {lessonData?.lsName}
@@ -266,7 +293,7 @@ export default function ViewReport() {
                         direction={{ xs: "column", sm: "row" }}
                         spacing={2}>
                             {
-                                legends.map((obj,index)=>{
+                                legends.map((obj, index)=>{
                                     return(
                                     <Stack direction={"row"} spacing={0.1} key={index}>
                                     {obj.icon}
@@ -282,18 +309,18 @@ export default function ViewReport() {
                 {/* students */}
                 <Grid container spacing={.8} mt={3.2} gap={1.3} gridTemplateColumns="repeat(10, 1fr)" gridTemplateRows="repeat(4, 1fr)">
                     {
-                        data.map((student, i)=>{
-                            if(student.status==1){
-                                return <StudentComp UserIcon={<UserGreen width={100} height={100}/>} student={student}/>
+                        students.map((student, i)=>{
+                            if(student.edStatus=="C"){
+                                return <UserIcon UserIcon={<UserGreen width={100} height={100}/>} student={student}/>
                             }
-                            else if(student.status==2){
-                                return <StudentComp UserIcon={<UserYellow width={100} height={100}/>} student={student}/>
-                            }
-                            else if(student.status==3){
-                                return <StudentComp UserIcon={<UserGrey width={100} height={100}/>} student={student}/>
-                            }
+                            // else if(student.edStatus=="L"){
+                            //     return <UserIcon UserIcon={<UserYellow width={100} height={100}/>} student={student}/>
+                            // }
+                            // else if(student.edStatus=="X"){
+                            //     return <UserIcon UserIcon={<UserGrey width={100} height={100}/>} student={student}/>
+                            // }
                             else{
-                                return <StudentComp UserIcon={<UserRed width={100} height={100}/>} student={student}/>
+                                return <UserIcon UserIcon={<UserRed width={100} height={100}/>} student={student}/>
                             }
                         })
                     }
@@ -301,7 +328,10 @@ export default function ViewReport() {
 
 
                 {/* students table */}
-                <ProgressStudentList lessonNo={lessonData?.lsLessonNo}/>
+                {
+                    students.length>0 &&
+                    <ProgressStudentList lessonNo={lessonData?.lsLessonNo} students={students}/>
+                }
 
             </Container>
         </Page>
@@ -310,22 +340,25 @@ export default function ViewReport() {
 
 type PropTypes = {
     UserIcon?: React.ReactNode,
-    student:{status:number, roll:string},
+    student:{edStatus:string, sdRollNo:string},
 }
 
-const StudentComp : React.FC<PropTypes> = (props) => {
+const UserIcon : React.FC<PropTypes> = (props) => {
     const {UserIcon} = props;
-    return <Grid item key={props.student?.roll}>
+    return <Grid item key={props.student?.sdRollNo}>
         <Stack sx={{position:'relative'}}>
             {UserIcon}
             <Typography variant='h5' component={"h4"} sx={{
                 position: 'absolute',
                 bottom: 11,
                 color: '#fff',
-                left:' 45%',
+                left: '50%',
+                transform:"translate(-50%)"
             }}>
-                {props.student?.roll}
+                {props.student?.sdRollNo}
             </Typography>
         </Stack>
     </Grid>
 }
+
+

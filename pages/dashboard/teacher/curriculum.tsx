@@ -211,7 +211,7 @@ export default function Curriculum() {
         const token = localStorage.getItem("accessToken");
         try {
           const response = await axios.post("https://api.educobot.com/lessonsRoute/getMaxOTPLesson",
-            { "std": classValue, "div": divisionValue },
+            { "std": classValue, "div": divisionValue, "course":CourseName },
             {
               headers: {
                 "authorization": `Bearer ${token}`

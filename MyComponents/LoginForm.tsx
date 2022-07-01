@@ -23,6 +23,7 @@ import {
 import axios from "axios";
 import { useRouter } from "next/router";
 import { responseSymbol } from "next/dist/server/web/spec-compliant/fetch-event";
+import jwtDecode from "jwt-decode";
 
 // ----------------------------------------------------------------------
 
@@ -82,13 +83,20 @@ export default function LoginForm() {
           "rollNo": rollno
         }
         const response = await axios.post('https://api.educobot.com/users/getUser', apibody);
+        if(response.data.token)
+        {
+          const {exp, userID}:any = await jwtDecode(response.data.token)
+          
+          if(Date.now() >= (exp*1000) == false){
+            router.push("/StudentOTPLogin?id="+userID)
+          }
+        }
 
-        let blocklyLessons = ["4bda4814-a2b1-4c4f-b102-eda5181bd0f8", "1d749e84-1155-4269-93ab-550ee7aabd4a"];
-        let lessonType = blocklyLessons.includes(response.data.lessonID) ? "blockly" : "game";
-
-        let link = `${process.env.webAppUrl}/${lessonType}/${response.data.lessonID}?user_id=${response.data.user}`
-        if (typeof window != 'undefined')
-          window.open(link)
+        // let blocklyLessons = ["4bda4814-a2b1-4c4f-b102-eda5181bd0f8", "1d749e84-1155-4269-93ab-550ee7aabd4a"];
+        // let lessonType = blocklyLessons.includes(response.data.lessonID) ? "blockly" : "game";
+        // let link = `${process.env.webAppUrl}/${lessonType}/${response.data.lessonID}?user_id=${response.data.user}`
+        // if (typeof window != 'undefined')
+        //   window.open(link)
 
         e.target.reset()
       }
