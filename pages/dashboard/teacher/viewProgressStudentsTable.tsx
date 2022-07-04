@@ -125,6 +125,15 @@ export default function ProgressStudentList(props) {
 
   useEffect(() => {
     // getStudents();
+    const SetData = () => {
+      let arr = props.students.map(student => {
+        if (student?.edStatus == 'L') return { ...student, edStatus: "L" }
+        else if(student?.edStatus == 'C') return { student, edStatus: "D" }
+        else return { student, edStatus: "X" }
+      });
+      setTableData(arr);
+    }
+    SetData();
   }, []);
 
 
@@ -234,10 +243,10 @@ export default function ProgressStudentList(props) {
       count: getLengthByStatus('L'),
     },
     {
-      value: "C",
+      value: "D",
       label: "Done",
       color: "success",
-      count: getLengthByStatus('C'),
+      count: getLengthByStatus('D'),
     },
     {
       value: "",
@@ -331,17 +340,26 @@ export default function ProgressStudentList(props) {
                 <TableBody>
                   {dataFiltered
                     .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                    .map((row) => (
-                      <StudentTableRow
+                    .map((row) => {
+
+                      const obj ={
+                        ...row,
+                        Name:row.student?.sdFName,
+                        RollNo: row.student?.sdRollNo,
+                        Incomplete: row.student?.Incomplete,
+                        TotalCoins: row.student?.TotalCoins
+                      }
+                      
+                      return <StudentTableRow
                         key={row.sdRollNo}
-                        row={row}
+                        row={obj}
                         selected={selected.includes(`${row.sdRollNo}`)}
                         onSelectRow={() => onSelectRow(`${row.sdRollNo}`)}
                         onDeleteRow={() => handleDeleteRow(`${row.sdRollNo}`)}
                         onEditRow={() => handleEditRow(row.sdFName)}
                         page={"ViewProgress"}
                       />
-                    ))}
+                    })}
 
                   <TableEmptyRows
                     height={denseHeight}
@@ -385,6 +403,7 @@ type row = {
     incomplete?: number;        
     points?: number;
     sdRollNo?:number;
+    student?: any
 };
 
 function applySortFilter({
@@ -417,7 +436,7 @@ function applySortFilter({
   if (filterName) {
     tableData = tableData.filter(
       (item: Record<string, any>) =>
-        item.sdFName.toLowerCase().indexOf(filterName.toLowerCase()) !== -1
+        item?.sdFName?.toLowerCase()?.indexOf(filterName?.toLowerCase()) !== -1
     );
   }
 

@@ -104,10 +104,10 @@ export default function Curriculum2_1() {
     const theme = useTheme();
     const { push } = useRouter();
     
+    
     const [closeAlert, setCloseAlert] = useState(true);
     const [closeAlertMsg, setCloseAlertMsg] = useState("");
     const [OTPsnackbar, setOTPsnackbar] = useState(false);
-    
     
     const [OpenTitleDDL, setOpenTitleDDL] = useState<null | HTMLElement>(null);
     const [classValue, setClassValue] = useState("5");
@@ -586,6 +586,7 @@ export default function Curriculum2_1() {
                                     classValue = {classValue}
                                     divisionValue = {divisionValue}
                                     previousLevel = {index>=1 && LevelArray[index-1]}
+                                    CourseName={CourseName}
                                 />
                             );
                         })}
@@ -610,11 +611,12 @@ type LessonCardProps = {
     CourseOTP?: string,
     divisionValue?: string,
     classValue?: string
-    previousLevel?: any
+    previousLevel?: any,
+    CourseName?:string
 }
 
 export const LessonCard = (
-    { level, index, isDivSelected, Unlock, expired_Lessons, open_lessons, CourseOTP, divisionValue, classValue, previousLevel}: LessonCardProps) => {
+    { level, index, isDivSelected, Unlock, expired_Lessons, open_lessons, CourseOTP, divisionValue, classValue, previousLevel, CourseName}: LessonCardProps) => {
     const theme = useTheme();
     const isLight = theme.palette.mode === "light";
     let tags = ["tag1", "tag2", "tag3", "tag4"];
@@ -865,13 +867,32 @@ export const LessonCard = (
 
                                         
                                         {/* VIEW REPORT */}
-                                        {(course?.isExpired && !course?.isOpenAndActive) ?
-                                            <Link href={PATH_DASHBOARD.teacher.viewReport +`?lsID=${course?.lsID}`+`&otp=${CourseOTP}&`+`div=${divisionValue}&`+`class=${classValue}`}>
+                                        {
+                                        (course?.isExpired && !course?.isOpenAndActive) ?
+                                            <Link
+                                            href={{
+                                                pathname: PATH_DASHBOARD.teacher.viewReport,
+                                                query:{
+                                                    lsID: course?.lsID,
+                                                    //otp: CourseOTP,
+                                                    div: divisionValue,
+                                                    class: classValue,
+                                                    course: CourseName,
+                                                    LessonNo: course.lsLessonNo}
+                                                }}>
                                                 <Button variant="outlined" color="warning" fullWidth sx={{ fontWeight: 900 }}>View report</Button>
                                             </Link>
                                             :
                                             course?.isOpenAndActive &&
-                                            <Link href={PATH_DASHBOARD.teacher.viewReport +`?lsID=${course?.lsID}`+`&otp=${CourseOTP}&`+`div=${divisionValue}&`+`class=${classValue}`}>
+                                            <Link
+                                            href={{
+                                                pathname: PATH_DASHBOARD.teacher.viewProgress,
+                                                query:{
+                                                    lsID: course?.lsID,
+                                                    otp: CourseOTP,
+                                                    div: divisionValue,
+                                                    class: classValue }
+                                                }}>
                                                 <Button variant="contained" color="warning" fullWidth sx={{ fontWeight: 900 }}>View report</Button>
                                             </Link>
                                         }

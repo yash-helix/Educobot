@@ -243,7 +243,8 @@ export default function ViewProgress() {
                 "std": query.class,
                 "div": query.div,
                 "lessonID":query.lsID,
-                "otp":query.otp
+                "otp":query.otp,
+                "course":query.course
             }
             const res = await axios.post("https://api.educobot.com/lessonsRoute/getStudentsProgress", body);
             if(res.data.data.length>0)
@@ -253,6 +254,7 @@ export default function ViewProgress() {
         }
         catch (error) {
             console.log(error)
+            setStudents([])
         }
     }
 
@@ -310,7 +312,7 @@ export default function ViewProgress() {
                 <Grid container spacing={.8} mt={3.2} gap={1.3} gridTemplateColumns="repeat(10, 1fr)" gridTemplateRows="repeat(4, 1fr)">
                     {
                         students.map((student, i)=>{
-                            if(student.edStatus=="C"){
+                            if(student?.edStatus=="C"){
                                 return <UserIcon UserIcon={<UserGreen width={100} height={100}/>} student={student}/>
                             }
                             else if(student.edStatus=="L"){
@@ -319,9 +321,6 @@ export default function ViewProgress() {
                             else if(student.edStatus=="X"){
                                 return <UserIcon UserIcon={<UserGrey width={100} height={100}/>} student={student}/>
                             }
-                            // else if(student.edStatus=="L"){
-                            //     return <UserIcon UserIcon={<UserRed width={100} height={100}/>} student={student}/>
-                            // }
                         })
                     }
                 </Grid>

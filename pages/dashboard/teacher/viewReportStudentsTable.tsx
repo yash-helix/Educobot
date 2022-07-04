@@ -74,8 +74,8 @@ export default function ReportStudentList(props) {
   const [tableData, setTableData] = useState(props.students);
   
     const TABLE_HEAD = [
-        { id: "sdFName", label: "Student", align: "left" },
-        { id: "sdRollNo", label: "Roll no", align: "left" },
+        { id: "Name", label: "Student", align: "left" },
+        { id: "RollNo", label: "Roll no", align: "left" },
         { id: "edStatus", label: `Lesson ${props.lessonNo} status`, align: "left" },
         { id: "Incomplete", label: "Incomplete Lessons", align: "left" },
         { id: "TotalCoins", label: "Points", align: "left" },
@@ -126,17 +126,17 @@ export default function ReportStudentList(props) {
 
   useEffect(() => {
     // getStudents();
-    const SetTableData = ()=>{
+    const SetData = ()=>{
         let arr = props.students.map(student=>{
-            if(student.edStatus=="X" || student.edStatus=="L")
+            if(student?.Completed!=0 || student?.InProgress>0 || student?.NotLogged>0)
             {
-                return {...student, edStatus:"L"}
+                return {...student, edStatus:"I"}
             }
-            else return student
+            else return {student, edStatus:"D"}
         });
         setTableData(arr);
     }
-    SetTableData();
+    SetData();
   }, []);
 
 
@@ -187,20 +187,20 @@ export default function ReportStudentList(props) {
   //   setFilterCourse(tab.value);
   // }
 
-  const handleDeleteRow = (sdRollNo: string) => {
-    const deleteRow = tableData.filter((row) => row.sdRollNo !== sdRollNo);
+  const handleDeleteRow = (RollNo: string) => {
+    const deleteRow = tableData.filter((row) => row.RollNo !== RollNo);
     setSelected([]);
     setTableData(deleteRow);
   };
 
   const handleDeleteRows = (selected: string[]) => {
-    const deleteRows = tableData.filter((row) => !selected.includes(row.sdRollNo));
+    const deleteRows = tableData.filter((row) => !selected.includes(row.RollNo));
     setSelected([]);
     setTableData(deleteRows);
   };
 
-  const handleEditRow = (sdRollNo: string) => {
-    push(PATH_DASHBOARD.student.edit(paramCase(sdRollNo)));
+  const handleEditRow = (RollNo: string) => {
+    push(PATH_DASHBOARD.student.edit(paramCase(RollNo)));
   };
 
   const dataFiltered = applySortFilter({
@@ -241,22 +241,22 @@ export default function ReportStudentList(props) {
             count: getLengthByStatus('X'),
         },
         {
-            value: "",
+            value: "L",
             label: "Doing",
             color: "warning",
-            count: getLengthByStatus(''),
+            count: getLengthByStatus('L'),
         },
         {
-            value: "C",
+            value: "D",
             label: "Done",
             color: "success",
-            count: getLengthByStatus('C'),
+            count: getLengthByStatus('D'),
         },
         {
-            value: "L",
+            value: "I",
             label: "Incomplete",
             color: "error",
-            count: getLengthByStatus('L'),
+            count: getLengthByStatus('I'),
         },
     ] as const;
   
@@ -310,15 +310,14 @@ export default function ReportStudentList(props) {
                   onSelectAllRows={(checked) =>
                     onSelectAllRows(
                       checked,
-                      tableData.map((row) => row.sdRollNo)
+                      tableData.map((row) => row.RollNo)
                     )
                   }
                   actions={
                     <Tooltip title="Delete">
                       <IconButton
                         color="primary"
-                        onClick={() => handleDeleteRows(selected)}
-                      >
+                        onClick={() => handleDeleteRows(selected)}>
                         <Iconify icon={"eva:trash-2-outline"} />
                       </IconButton>
                     </Tooltip>
@@ -337,24 +336,35 @@ export default function ReportStudentList(props) {
                   onSelectAllRows={(checked) =>
                     onSelectAllRows(
                       checked,
-                      tableData.map((row) => row.sdRollNo)
+                      tableData.map((row) => row.RollNo)
                     )
                   }
                 />
                 <TableBody>
                   {dataFiltered
                     .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                    .map((row) => (
-                      <StudentTableRow
-                        key={row.sdRollNo}
-                        row={row}
-                        selected={selected.includes(`${row.sdRollNo}`)}
-                        onSelectRow={() => onSelectRow(`${row.sdRollNo}`)}
-                        onDeleteRow={() => handleDeleteRow(`${row.sdRollNo}`)}
-                        onEditRow={() => handleEditRow(row.sdFName)}
-                        page={"ViewReport"}
-                      />
-                    ))}
+                    .map((row) => {
+                        // console.log(row)
+                        const obj = {
+                            ...row,
+                            edStatus: row?.edStatus,
+                            TotalCoins: row?.totalCoins,
+                            Incomplete: row?.NotLogged + row?.InProgress
+                        }
+
+                        return obj?.edStatus ?
+                         <StudentTableRow
+                            key={row.RollNo}
+                            row={obj}
+                            selected={selected.includes(`${row.RollNo}`)}
+                            onSelectRow={() => onSelectRow(`${row.RollNo}`)}
+                            onDeleteRow={() => handleDeleteRow(`${row.RollNo}`)}
+                            onEditRow={() => handleEditRow(row.Name)}
+                            page={"ViewReport"}
+                        />
+                        :
+                        <></>
+                    })}
 
                   <TableEmptyRows
                     height={denseHeight}
@@ -392,12 +402,15 @@ export default function ReportStudentList(props) {
 // ----------------------------------------------------------------------
 
 type row = {
-    sdFName?: string;
+    Name?: string;
     email?:string;
     edStatus?: string;
     incomplete?: number;        
     points?: number;
-    sdRollNo?:number;
+    RollNo?:number;
+    totalCoins?:number
+    NotLogged?: number
+    InProgress?:number
 };
 
 function applySortFilter({
@@ -430,7 +443,7 @@ function applySortFilter({
   if (filterName) {
     tableData = tableData.filter(
       (item: Record<string, any>) =>
-        item.sdFName.toLowerCase().indexOf(filterName.toLowerCase()) !== -1
+        item.Name.toLowerCase().indexOf(filterName.toLowerCase()) !== -1
     );
   }
 

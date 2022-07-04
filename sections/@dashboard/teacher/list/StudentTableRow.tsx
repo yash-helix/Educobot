@@ -20,11 +20,11 @@ import { TableMoreMenu } from "../../../../components/table";
 
 // ----------------------------------------------------------------------
 type row = {
-  sdFName?: string;
+  Name?: string;
   edStatus?: string;
   Incomplete?: number;        
   TotalCoins?: number;
-  sdRollNo?:number;
+  RollNo?:number;
   Complete?:number
 };
 
@@ -47,7 +47,8 @@ export default function StudentTableRow({
 }: Props) {
   const theme = useTheme();
 
-  const { sdFName, edStatus, Incomplete, TotalCoins, sdRollNo } = row;
+  const { Name, edStatus, Incomplete, TotalCoins, RollNo } = row;
+  // console.log(Name, edStatus, Incomplete, TotalCoins, RollNo)
 
   const [openMenu, setOpenMenuActions] = useState<HTMLElement | null>(null);
 
@@ -63,16 +64,17 @@ export default function StudentTableRow({
   
 
   const getStatus = ()=>{
-    if(edStatus === 'C'){
+    if(edStatus === 'D'){
       setStatus({color:"success", text:"Done"})
     }
-    else if(edStatus === 'L'){
-      if(page=='ViewReport') setStatus({color:"error", text:"Incomplete"})
-      else setStatus({color:"warning", text:"Doing"})
+    else if(edStatus === 'I'){
+      setStatus({color:"error", text:"Incomplete"})
     }
     else if(edStatus === 'X'){
-      if(page=='ViewReport') setStatus({color:"error", text:"Incomplete"})
-      else setStatus({color:"default", text:"Not Started"})
+      setStatus({color:"default", text:"Not Started"})
+    }
+    else if(edStatus === 'L'){
+      setStatus({color:"warning", text:"L"})
     }
   }
 
@@ -90,7 +92,7 @@ export default function StudentTableRow({
         {/* <Avatar alt={name} src={avatarUrl} sx={{ mr: 2 }} /> */}
         <Stack>
           <Typography variant="subtitle2" noWrap>
-            {sdFName}
+            {Name}
           </Typography>
           {/* <Typography variant="subtitle2" noWrap color={"text.secondary"}>
             {email}
@@ -98,7 +100,7 @@ export default function StudentTableRow({
         </Stack>
       </TableCell>
 
-      <TableCell align="left">{sdRollNo}</TableCell>
+      <TableCell align="left">{RollNo}</TableCell>
 
       <TableCell align="left" sx={{ textTransform: "capitalize" }}>
         <Label
