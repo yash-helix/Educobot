@@ -39,9 +39,10 @@ import UserYellow from '../../../assets/userIcons/UserYellow';
 import UserGreen from '../../../assets/userIcons/UserGreen';
 import ProgressStudentList from './viewReportStudentsTable'
 import axios from 'axios'
+import ReportStudentList from './viewReportStudentsTable'
 
 
-ViewProgress.getLayout = function getLayout(page: React.ReactElement) {
+ViewReport.getLayout = function getLayout(page: React.ReactElement) {
     return <Layout>{page}</Layout>
 }
 
@@ -207,7 +208,7 @@ const legends = [
 
 
 
-export default function ViewProgress() {
+export default function ViewReport() {
     const {query} = useRouter();
     const router = useRouter()
     
@@ -243,16 +244,17 @@ export default function ViewProgress() {
                 "std": query.class,
                 "div": query.div,
                 "lessonID":query.lsID,
-                "otp":query.otp
+                "course" : query.course,
             }
-            const res = await axios.post("https://api.educobot.com/lessonsRoute/getStudentsProgress", body);
-            if(res.data.data.length>0)
+            const res = await axios.post("https://api.educobot.com/lessonsRoute/getClosedPINStudentsProgress", body)
+            if(res.data.length>0)
             {
-                setStudents(res.data.data)
+                setStudents(res.data)
             }
         }
         catch (error) {
             console.log(error)
+            setStudents([])
         }
     }
 
@@ -310,15 +312,9 @@ export default function ViewProgress() {
                 <Grid container spacing={.8} mt={3.2} gap={1.3} gridTemplateColumns="repeat(10, 1fr)" gridTemplateRows="repeat(4, 1fr)">
                     {
                         students.map((student, i)=>{
-                            if(student.edStatus=="C"){
+                            if(student.Completed!=0){
                                 return <UserIcon UserIcon={<UserGreen width={100} height={100}/>} student={student}/>
                             }
-                            // else if(student.edStatus=="L"){
-                            //     return <UserIcon UserIcon={<UserYellow width={100} height={100}/>} student={student}/>
-                            // }
-                            // else if(student.edStatus=="X"){
-                            //     return <UserIcon UserIcon={<UserGrey width={100} height={100}/>} student={student}/>
-                            // }
                             else{
                                 return <UserIcon UserIcon={<UserRed width={100} height={100}/>} student={student}/>
                             }
@@ -326,11 +322,10 @@ export default function ViewProgress() {
                     }
                 </Grid>
 
-
                 {/* students table */}
                 {
                     students.length>0 &&
-                    <ProgressStudentList lessonNo={lessonData?.lsLessonNo} students={students}/>
+                    <ReportStudentList lessonNo={query.LessonNo} students={students}/>
                 }
 
             </Container>
@@ -340,12 +335,12 @@ export default function ViewProgress() {
 
 type PropTypes = {
     UserIcon?: React.ReactNode,
-    student:{edStatus:string, sdRollNo:string},
+    student:{edStatus:string, RollNo:string},
 }
 
 const UserIcon : React.FC<PropTypes> = (props) => {
     const {UserIcon} = props;
-    return <Grid item key={props.student?.sdRollNo}>
+    return <Grid item key={props.student?.RollNo}>
         <Stack sx={{position:'relative'}}>
             {UserIcon}
             <Typography variant='h5' component={"h4"} sx={{
@@ -355,7 +350,7 @@ const UserIcon : React.FC<PropTypes> = (props) => {
                 left: '50%',
                 transform:"translate(-50%)"
             }}>
-                {props.student?.sdRollNo}
+                {props.student?.RollNo}
             </Typography>
         </Stack>
     </Grid>
