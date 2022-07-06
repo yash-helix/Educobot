@@ -132,7 +132,6 @@ export default function StudentOTPLogin() {
             const res = await axios.post("https://api.educobot.com/sessionRoute/getLessonsByPIN4Students", obj);
             if(res.data.length>0){
                 let allLessons = await getExpired(res.data);
-                console.log(allLessons)
                 setMasterLessons(allLessons);
 
                 setInfobar({open:false, msg:""})
@@ -180,7 +179,7 @@ export default function StudentOTPLogin() {
             "userID": lesson.edUID,
             "edType": lesson.edType,
             "std": lesson.edStd,
-            "div": "B",
+            "div": lesson.edRollNo,
             "status": lesson.edStatus,
             "lessonID": lesson.lsID,
             "rollNo":lesson.edRollNo,
@@ -189,6 +188,8 @@ export default function StudentOTPLogin() {
         }
         const res = await axios.post("https://api.educobot.com/users/postEvalData", body);
         console.log(res)
+        if(res.data?.msg!=="") return true
+        else return false
     }
 
 
@@ -273,7 +274,7 @@ type LessonCardProps = {
     index: Number,
     level: any
     userId : any
-    postEvalData : (lessonID) => Promise<void>
+    postEvalData : (lessonID) => Promise<boolean>
 }
 
 export const LessonCard = ({index, level, userId, postEvalData} : LessonCardProps) => {
@@ -281,22 +282,23 @@ export const LessonCard = ({index, level, userId, postEvalData} : LessonCardProp
     const isLight = theme.palette.mode === "light";
     let tags = ["tag1", "tag2", "tag3", "tag4"];
 
-    const openLesson = (lesson) => {
+    const openLesson = async(lesson) => {
+        const flag = await postEvalData(lesson);
 
-        postEvalData(lesson);
-
-        try {
-            let blocklyLessons = ["4bda4814-a2b1-4c4f-b102-eda5181bd0f8", "1d749e84-1155-4269-93ab-550ee7aabd4a"];
-            let lessonType = blocklyLessons.includes(lesson.lsID) ? "blockly" : "game";
-
-            let link = userId &&
+        if(flag){
+            try {
+                let blocklyLessons = ["4bda4814-a2b1-4c4f-b102-eda5181bd0f8", "1d749e84-1155-4269-93ab-550ee7aabd4a"];
+                let lessonType = blocklyLessons.includes(lesson.lsID) ? "blockly" : "game";
+                
+                let link = userId &&
                 `${process.env.webAppUrl}/${lessonType}/${lesson.lsID}?user_id=${userId}`;
-
-            link = lesson.lsCourse == "Python Basic" ? `${process.env.webAppUrl}/script/${lesson.lsID}` : link;
-            (link && typeof window != 'undefined') && window.open(link)
-        }
-        catch (error) {
-            console.log(error)
+                
+                link = lesson.lsCourse == "Python Basic" ? `${process.env.webAppUrl}/script/${lesson.lsID}` : link;
+                (link && typeof window != 'undefined') && window.open(link)
+            }
+            catch (error) {
+                console.log(error)
+            }
         }
     }
 
