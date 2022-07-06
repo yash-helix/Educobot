@@ -1,57 +1,64 @@
 // next
-import { useRouter } from 'next/router';
+import { useRouter } from "next/router";
 // @mui
-import { styled, useTheme } from '@mui/material/styles';
-import { Box, Button, AppBar, Toolbar, Container, TextField, MenuItem } from '@mui/material';
+import { styled, useTheme } from "@mui/material/styles";
+import {
+  Box,
+  Button,
+  AppBar,
+  Toolbar,
+  Container,
+  TextField,
+  MenuItem,
+} from "@mui/material";
 // hooks
-import useOffSetTop from '../../hooks/useOffSetTop';
-import useResponsive from '../../hooks/useResponsive';
+import useOffSetTop from "../../hooks/useOffSetTop";
+import useResponsive from "../../hooks/useResponsive";
 // utils
-import cssStyles from '../../utils/cssStyles';
+import cssStyles from "../../utils/cssStyles";
 // config
-import { HEADER } from '../../config';
+import { HEADER } from "../../config";
 
 // components
-import Logo from '../../components/Logo';
-import Label from '../../components/Label';
+import Logo from "../../components/Logo";
+import Label from "../../components/Label";
 //
-import MenuDesktop from './MenuDesktop';
-import MenuMobile from './MenuMobile';
-import navConfig from './MenuConfig';
-import { phoneMenuConfig } from './MenuConfig';
-import { useState } from 'react';
-import SettingMode from '../../components/settings/SettingMode';
-import { RHFSelect } from '../../components/hook-form';
-import useLocales from '../../hooks/useLocales';
+import MenuDesktop from "./MenuDesktop";
+import MenuMobile from "./MenuMobile";
+import navConfig from "./MenuConfig";
+import { phoneMenuConfig } from "./MenuConfig";
+import { useState } from "react";
+import SettingMode from "../../components/settings/SettingMode";
+import { RHFSelect } from "../../components/hook-form";
+import useLocales from "../../hooks/useLocales";
 
 // ----------------------------------------------------------------------
 
 const ToolbarStyle = styled(Toolbar)(({ theme }) => ({
   height: HEADER.MOBILE_HEIGHT,
-  transition: theme.transitions.create(['height', 'background-color'], {
+  transition: theme.transitions.create(["height", "background-color"], {
     easing: theme.transitions.easing.easeInOut,
     duration: theme.transitions.duration.shorter,
   }),
-  [theme.breakpoints.up('md')]: {
+  [theme.breakpoints.up("md")]: {
     height: HEADER.MAIN_DESKTOP_HEIGHT,
   },
 }));
 
-const ToolbarShadowStyle = styled('div')(({ theme }) => ({
+const ToolbarShadowStyle = styled("div")(({ theme }) => ({
   left: 0,
   right: 0,
   bottom: 0,
   height: 24,
   zIndex: -1,
-  margin: 'auto',
-  borderRadius: '50%',
-  position: 'absolute',
+  margin: "auto",
+  borderRadius: "50%",
+  position: "absolute",
   width: `calc(100% - 48px)`,
   boxShadow: theme.customShadows.z8,
 }));
 
 // ----------------------------------------------------------------------
-
 
 export default function MainHeader() {
   const isOffset = useOffSetTop(HEADER.MAIN_DESKTOP_HEIGHT);
@@ -61,17 +68,19 @@ export default function MainHeader() {
   const { pathname } = useRouter();
   const { allLang, currentLang, onChangeLang } = useLocales();
 
-  const isDesktop = useResponsive('up', 'md');
+  const isDesktop = useResponsive("up", "md");
 
-  const isHome = pathname === '/';
+  const isHome = pathname === "/";
   const [seriesData, setSeriesData] = useState(2019);
 
-  const handleChangeSeriesData = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChangeSeriesData = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     setSeriesData(Number(event.target.value));
   };
 
   return (
-    <AppBar sx={{ boxShadow: 0, bgcolor: 'transparent' }}>
+    <AppBar sx={{ boxShadow: 0, bgcolor: "transparent" }}>
       <ToolbarStyle
         disableGutters
         sx={{
@@ -83,16 +92,16 @@ export default function MainHeader() {
       >
         <Container
           sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
           }}
         >
-          <Logo sx={{ width: 'auto' }} />
+          <Logo sx={{ width: "auto" }} />
           <TextField
             id="edu"
             select
-            variant='standard'
+            variant="standard"
             value={currentLang.value}
             sx={{ marginLeft: "16px", marginBottom: "18px" }}
             onChange={(event) => onChangeLang(event.target.value)}
@@ -105,10 +114,15 @@ export default function MainHeader() {
           </TextField>
           <Box sx={{ flexGrow: 1 }} />
 
-          {isDesktop && <MenuDesktop isOffset={isOffset} isHome={isHome} navConfig={navConfig} />}
+          {isDesktop && (
+            <MenuDesktop
+              isOffset={isOffset}
+              isHome={isHome}
+              navConfig={navConfig}
+            />
+          )}
 
-
-          {isDesktop &&
+          {isDesktop && (
             <>
               <Button
                 variant="outlined"
@@ -128,10 +142,16 @@ export default function MainHeader() {
                 Sign Up
               </Button>
             </>
-          }
+          )}
 
           <SettingMode />
-          {!isDesktop && <MenuMobile isOffset={isOffset} isHome={isHome} navConfig={phoneMenuConfig} />}
+          {!isDesktop && (
+            <MenuMobile
+              isOffset={isOffset}
+              isHome={isHome}
+              navConfig={phoneMenuConfig}
+            />
+          )}
         </Container>
       </ToolbarStyle>
 
