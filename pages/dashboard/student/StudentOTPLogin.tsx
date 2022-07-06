@@ -255,7 +255,7 @@ export default function StudentOTPLogin() {
                     {/* lesson cards */}
                     {
                         LevelArray.map((level, index) => {
-                            return <LessonCard index={index} level={level} userId={query.id} 
+                            return <LessonCard key={index} index={index} level={level} userId={query.id} 
                             postEvalData={postEvalData}/>
                         })
                     }
