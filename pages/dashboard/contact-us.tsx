@@ -26,7 +26,7 @@ import { useRouter } from "next/router";
 // ----------------------------------------------------------------------
 
 ContactForm.getLayout = function getLayout(page: React.ReactElement) {
-  return <Layout children={""}>{page}</Layout>;
+  return <Layout>{page}</Layout>;
 };
 
 export default function ContactForm() {
