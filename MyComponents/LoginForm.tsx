@@ -88,7 +88,7 @@ export default function LoginForm() {
           const {exp, userID}:any = await jwtDecode(response.data.token)
           
           if(Date.now() >= (exp*1000) == false){
-            router.push("/StudentOTPLogin?id="+userID)
+            router.push(`/dashboard/student/StudentOTPLogin?id=${userID}&otp=${otp}`)
           }
         }
 
