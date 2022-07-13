@@ -292,9 +292,8 @@ export const LessonCard = ({levelNo, level, userId, postEvalData, CourseOTP} : L
     let tags = ["tag1", "tag2", "tag3", "tag4"];
 
 
-    const getPythonLessonTypefromId = (id: string) => {
-        const searchIndex = pythonJson.findIndex((lesson) => lesson["4a46c77f-562b-464c-b906-6417bb0c7ac9"]==id);
-        const type = pythonJson[searchIndex]["Python Predictive"]
+    const getPythonLessonTypefromId = (course:any) => {
+        const type = course['lsType']
 
         let lessonType = "";
         switch (type) {
@@ -309,7 +308,6 @@ export const LessonCard = ({levelNo, level, userId, postEvalData, CourseOTP} : L
         }
     }
 
-
     const openLesson = async (course: any) => {
         try {
             const userId = localStorage.getItem("userID");
@@ -320,10 +318,12 @@ export const LessonCard = ({levelNo, level, userId, postEvalData, CourseOTP} : L
             
             if(course.lsCourse == "Python Basic")
             {
-                const lessonType = getPythonLessonTypefromId(course.lsID);
+                const lessonType = getPythonLessonTypefromId(course);
                 link = lessonType !== "" ?
                 `${process.env.webAppUrl}/${lessonType}/${course.lsID}?user_id=${userId}&otp=${CourseOTP}`:
                 "#"
+                
+                link = lessonType=="quiz" ? `http://localhost:3001/dashboard/quiz/${course.lsID}` : link
             }
             (link && typeof window != 'undefined') && window.open(link)
         }
