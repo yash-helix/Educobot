@@ -10,61 +10,33 @@ import useSettings from "../../../hooks/useSettings";
 // @mui
 import {
     Box,
-    Tab,
-    Tabs,
     Card,
-    Table,
-    Switch,
     Button,
-    Tooltip,
-    Divider,
-    TableBody,
     Container,
-    IconButton,
-    TableContainer,
-    TablePagination,
-    FormControlLabel,
     Typography,
     Stack,
     TextField,
-    Menu,
     MenuItem,
     Grid,
     Chip,
     Alert,
-    AlertTitle,
 } from "@mui/material";
-import { alpha } from "@mui/material/styles";
-// routes
-import { PATH_AUTH, PATH_DASHBOARD } from "../../../routes/paths";
 
-// @types
-import { UserManager } from "../../../@types/user";
-
-import data from "../../../_mock/data";
-// layouts
-import Layout from "../../../layouts";
 // components
 import Page from "../../../components/Page";
-import Iconify from "../../../components/Iconify";
-import Scrollbar from "../../../components/Scrollbar";
-import Label from "../../../components/Label";
-import HeaderBreadcrumbs from "../../../components/HeaderBreadcrumbs";
-
-import { LoadingButton, masonryClasses } from "@mui/lab";
 
 import pellete from "../../../theme/palette";
 import Image from "../../../components/Image";
 import axios from "axios";
-import dummyIMG from "../../../public/imgs/rabbitImg.png";
-import { ClassNames } from "@emotion/react";
-import Link from "next/link";
-import uuidv4 from "../../../utils/uuidv4";
 import LockIcon from "../../../assets/icon_Lock";
 import Logo from "../../../components/Logo";
 import MoreMenuButton from "../../../components/MoreMenuButton"
 import useLocales from '../../../hooks/useLocales';
 import MemoIcon_userGrey from "../../../assets/userIcons/UserGrey";
+
+
+// python json
+import {pythonJson} from "../../../python";
 
 // ----------------------------------------------------------------------
 
@@ -81,11 +53,9 @@ export default function StudentOTPLogin() {
     const router = useRouter();
 
     const { themeStretch } = useSettings();
-    const theme = useTheme();
+
     const { allLang, currentLang, onChangeLang } = useLocales();
-    
-    const [closeAlert, setCloseAlert] = useState(true);
-    const [closeAlertMsg, setCloseAlertMsg] = useState("");
+
     const [infoBar, setInfobar] = useState(null);
 
     const [student, setStudent] = useState(null);
@@ -152,25 +122,63 @@ export default function StudentOTPLogin() {
     const mapMasterLessonsByLevels = () => {
         SetLevelArray([]);
 
-        MasterLessons.length > 0 &&
-            MasterLessons.map((les, index) => {
-                let levelArr = MasterLessons.map(lesson => lesson?.lsLevel == index + 1 && lesson).filter(item => item != false)
-                if (levelArr.length > 0)
-                {
-                    const firstActiveLessoninLevel = levelArr.map(lessonObj => lessonObj?.isActive).indexOf(true);
-                    if(firstActiveLessoninLevel >= 0){
-                        levelArr = levelArr.map((lesson, i) => {
-                            if(i > firstActiveLessoninLevel)
-                                return {...lesson, isActive:false, inActive:true}
-                            else 
-                                return {...lesson}
+        if (MasterLessons.length > 0) {
+            // grouping
+            const groupedByCategoryArr = MasterLessons.reduce((group, lesson) => {
+                const { lsLevel } = lesson;
+                group[lsLevel] = group[lsLevel] ?? [];
+                group[lsLevel].push(lesson);
+                return group;
+            }, {})
+
+            // performing operations on grouped levels
+            Object.keys(groupedByCategoryArr).map(levelNo => {
+                if (groupedByCategoryArr[levelNo].length > 0) {
+                    const firstActiveLessoninLevel = groupedByCategoryArr[levelNo].map(lessonObj => lessonObj?.isActive).indexOf(true);
+
+                    let levelArr = [];
+                    if (firstActiveLessoninLevel >= 0) {
+                        // to make lesson in all levels accessible
+                        levelArr = groupedByCategoryArr[levelNo].map((lesson, i) => {
+                            if (i > firstActiveLessoninLevel && lesson?.edStatus !== "C")
+                                return { ...lesson, isActive: false, inActive: true }
+                            else
+                                return { ...lesson }
                         })
                         SetLevelArray(prev => [...prev, levelArr]);
                     }
-                    else 
+                    else
                         SetLevelArray(prev => [...prev, levelArr]);
                 }
             })
+        }
+
+
+        // MasterLessons.length > 0 &&
+        //     MasterLessons.map((les, index) => {
+        //         let levelArr = MasterLessons.map(lesson => {
+        //             // console.log(lesson?.lsLevel, index)
+        //             return lesson?.lsLevel == index + 1 && lesson
+        //         }).filter(item => item != false)
+                
+        //         if (levelArr.length > 0)
+        //         {
+        //             const firstActiveLessoninLevel = levelArr.map(lessonObj => lessonObj?.isActive).indexOf(true);
+        //             if(firstActiveLessoninLevel >= 0){
+        //                 // to make lesson in all levels accessible
+        //                 levelArr = levelArr.map((lesson, i) => {
+        //                     if(i > firstActiveLessoninLevel)
+        //                         return {...lesson, isActive:false, inActive:true}
+        //                     else 
+        //                         return {...lesson}
+        //                 })
+                        
+        //                 SetLevelArray(prev => [...prev, levelArr]);
+        //             }
+        //             else 
+        //                 SetLevelArray(prev => [...prev, levelArr]);
+        //         }
+        //     })
     }
 
 
@@ -254,9 +262,9 @@ export default function StudentOTPLogin() {
 
                     {/* lesson cards */}
                     {
-                        LevelArray.map((level, index) => {
-                            return <LessonCard key={index} index={index} level={level} userId={query.id} 
-                            postEvalData={postEvalData}/>
+                        LevelArray.map((level, i) => {
+                            return <LessonCard key={i} levelNo={level[i]?.lsLevel} level={level} userId={query.id} 
+                            postEvalData={postEvalData} CourseOTP={query?.otp}/>
                         })
                     }
                 </Box>
@@ -271,34 +279,56 @@ export default function StudentOTPLogin() {
 
 // CARD COMPONENT
 type LessonCardProps = {
-    index: Number,
+    levelNo: any,
     level: any
     userId : any
     postEvalData : (lessonID) => Promise<boolean>
+    CourseOTP:any
 }
 
-export const LessonCard = ({index, level, userId, postEvalData} : LessonCardProps) => {
+export const LessonCard = ({levelNo, level, userId, postEvalData, CourseOTP} : LessonCardProps) => {
     const theme = useTheme();
     const isLight = theme.palette.mode === "light";
     let tags = ["tag1", "tag2", "tag3", "tag4"];
 
-    const openLesson = async(lesson) => {
-        const flag = await postEvalData(lesson);
 
-        if(flag){
-            try {
-                let blocklyLessons = ["4bda4814-a2b1-4c4f-b102-eda5181bd0f8", "1d749e84-1155-4269-93ab-550ee7aabd4a"];
-                let lessonType = blocklyLessons.includes(lesson.lsID) ? "blockly" : "game";
-                
-                let link = userId &&
-                `${process.env.webAppUrl}/${lessonType}/${lesson.lsID}?user_id=${userId}`;
-                
-                link = lesson.lsCourse == "Python Basic" ? `${process.env.webAppUrl}/script/${lesson.lsID}` : link;
-                (link && typeof window != 'undefined') && window.open(link)
+    const getPythonLessonTypefromId = (id: string) => {
+        const searchIndex = pythonJson.findIndex((lesson) => lesson["4a46c77f-562b-464c-b906-6417bb0c7ac9"]==id);
+        const type = pythonJson[searchIndex]["Python Predictive"]
+
+        let lessonType = "";
+        switch (type) {
+            case "Python Quiz based":
+                return lessonType = "quiz"
+            case "Python Open Editor":
+                return lessonType = "editor"
+            case "Python Predictive":
+                return lessonType = "script"
+            default:
+                return lessonType
+        }
+    }
+
+
+    const openLesson = async (course: any) => {
+        try {
+            const userId = localStorage.getItem("userID");
+            
+            let link = userId ?
+            `${process.env.webAppUrl}/game/${course?.lsID}?user_id=${userId}&otp=${CourseOTP}` :
+            "#";
+            
+            if(course.lsCourse == "Python Basic")
+            {
+                const lessonType = getPythonLessonTypefromId(course.lsID);
+                link = lessonType !== "" ?
+                `${process.env.webAppUrl}/${lessonType}/${course.lsID}?user_id=${userId}&otp=${CourseOTP}`:
+                "#"
             }
-            catch (error) {
-                console.log(error)
-            }
+            (link && typeof window != 'undefined') && window.open(link)
+        }
+        catch (error) {
+            console.log(error)
         }
     }
 
@@ -329,12 +359,13 @@ export const LessonCard = ({index, level, userId, postEvalData} : LessonCardProp
             </>
         }
     }
-
+    
     return(
         <Box mt={"40px"}>
+            
             <Stack direction={"row"} justifyContent={"space-between"} alignItems="center">
                 <Typography variant="h6" component={"h1"} paddingLeft={1}>
-                    Level {Number(index) + 1}
+                    Level {levelNo}
                 </Typography>
                 <MoreMenuButton/>
             </Stack>

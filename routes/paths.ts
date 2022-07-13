@@ -45,7 +45,7 @@ export const PATH_DASHBOARD = {
     test: path(ROOTS_DASHBOARD, "/testFile"),
   },
   student: {
-    root: path(ROOTS_DASHBOARD, "/student"),
+    root: path(ROOTS_DASHBOARD, "/student/"),
     demoEdit: path(ROOTS_DASHBOARD, `/student/ashutosh/edit`),
     edit: (name: string) => path(ROOTS_DASHBOARD, `/student/${name}/edit`),
     // list: path(ROOTS_DASHBOARD, `/student/list`),
