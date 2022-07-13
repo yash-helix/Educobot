@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useTheme } from "@mui/material/styles";
 // next
 import NextLink from "next/link";
-import { useRouter } from "next/router";
+import Router, { useRouter } from "next/router";
 // @mui
 import {
     Box,
@@ -603,6 +603,7 @@ type LessonCardProps = {
 export const LessonCard = (
     { level, index, isDivSelected, Unlock, expired_Lessons, open_lessons, CourseOTP, divisionValue, classValue, previousLevel, CourseName}: LessonCardProps) => {
     const theme = useTheme();
+    const { push } = useRouter();
     const isLight = theme.palette.mode === "light";
     let tags = ["tag1", "tag2", "tag3", "tag4"];
 
@@ -613,7 +614,8 @@ export const LessonCard = (
         let lessonType = "";
         switch (type) {
             case "Python Quiz based":
-                return lessonType = "quiz"
+                push(`http://localhost:3001/dashboard/quiz/${id}`)
+                break;
             case "Python Open Editor":
                 return lessonType = "editor"
             case "Python Predictive":
