@@ -637,6 +637,8 @@ export const LessonCard = (
                 link = lessonType !== "" ?
                 `${process.env.webAppUrl}/${lessonType}/${course.lsID}?user_id=${userId}&otp=${CourseOTP}`:
                 "#"
+
+                link = lessonType=="quiz" ? `http://localhost:3001/dashboard/quiz/${lsID}` : link
             }
             (link && typeof window != 'undefined') && window.open(link)
         }
