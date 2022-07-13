@@ -435,6 +435,8 @@ function AuthProvider({ children }: AuthProviderProps) {
           password,
       });
 
+      console.log(response)
+
       const { token, user, schoolID, userType } = response.data;
       setSession(token, user, schoolID, userType); //user = id
 

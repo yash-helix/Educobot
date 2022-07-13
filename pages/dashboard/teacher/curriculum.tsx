@@ -79,6 +79,9 @@ import Link from "next/link";
 import uuidv4 from "../../../utils/uuidv4";
 import LockIcon from "../../../assets/icon_Lock";
 
+// python json
+// import {pythonJson} from "../../../python";
+
 // ----------------------------------------------------------------------
 
 // ----------------------------------------------------------------------
@@ -268,24 +271,18 @@ export default function Curriculum2_1() {
             })
         }
         
-        
-        const mapMasterLessonsByLevels = () => {
-            SetLevelArray([]);
-            MasterLessons.length > 0 &&
+
+    const mapMasterLessonsByLevels = () => {
+        SetLevelArray([]);
+        MasterLessons.length > 0 &&
             MasterLessons.map((les, index) => {
                 const levelArr = MasterLessons.map(lesson => lesson?.lsLevel == index + 1 && lesson).filter(item => item != false)
-                if (levelArr.length > 0){
+                if (levelArr.length > 0) {
                     SetLevelArray(prev => [...prev, levelArr]);
-                //     if (CourseOTP) {
-                    //         //to make the lesson after the latest opened lesson accessible
-                //         const lastActiveAndOpenLesson = levelArr.map(l => l.isOpenAndActive).lastIndexOf(true);
-                //         levelArr[lastActiveAndOpenLesson + 1]['nextLessonToUnlock'] = true
-                //     }
-                //     SetLevelArray(prev => [...prev, levelArr]);
-            }
-        })
+                }
+            })
     }
-    
+
     
     // generate otp
     const generateOTP = async () => {
@@ -336,7 +333,6 @@ export default function Curriculum2_1() {
                 "schoolID": localStorage.getItem("schoolID")
             }
             const res = await axios.post("https://api.educobot.com/sessionRoute/postOTPLesson", body)
-            console.log(res)
             getAllLessonData1();
         }
         catch (error) {
@@ -611,16 +607,37 @@ export const LessonCard = (
     let tags = ["tag1", "tag2", "tag3", "tag4"];
 
 
+    const getPythonLessonTypefromId = (id: string, course:any) => {
+        const type = course['lsType']
+
+        let lessonType = "";
+        switch (type) {
+            case "Python Quiz based":
+                return lessonType = "quiz"
+            case "Python Open Editor":
+                return lessonType = "editor"
+            case "Python Predictive":
+                return lessonType = "script"
+            default:
+                return lessonType
+        }
+    }
+
     const openLesson = async (lsID: string, course: any) => {
         try {
-            let blocklyLessons = ["4bda4814-a2b1-4c4f-b102-eda5181bd0f8", "1d749e84-1155-4269-93ab-550ee7aabd4a"];
-            let lessonType = blocklyLessons.includes(lsID) ? "blockly" : "game";
-
             const userId = localStorage.getItem("userID");
-            let link = userId &&
-                `${process.env.webAppUrl}/${lessonType}/${lsID}?user_id=${userId}`;
-
-            link = course.lsCourse == "Python Basic" ? `${process.env.webAppUrl}/script/${course.lsID}` : link;
+            
+            let link = userId ?
+            `${process.env.webAppUrl}/game/${lsID}?user_id=${userId}&otp=${CourseOTP}` :
+            "#";
+            
+            if(course.lsCourse == "Python Basic")
+            {
+                const lessonType = getPythonLessonTypefromId(lsID, course);
+                link = lessonType !== "" ?
+                `${process.env.webAppUrl}/${lessonType}/${course.lsID}?user_id=${userId}&otp=${CourseOTP}`:
+                "#"
+            }
             (link && typeof window != 'undefined') && window.open(link)
         }
         catch (error) {

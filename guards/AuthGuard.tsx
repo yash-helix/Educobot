@@ -1,44 +1,60 @@
-import { useState, ReactNode, useEffect } from "react";
+import { useState, ReactNode, useEffect } from 'react';
 // next
-import { useRouter } from "next/router";
+import { useRouter } from 'next/router';
 // hooks
-import useAuth from "../hooks/useAuth";
-import Login from "../pages/auth/login";
+import useAuth from '../hooks/useAuth';
+import Login from '../pages/auth/login';
 // components
-import LoadingScreen from "../components/LoadingScreen";
-
+import { PATH_DASHBOARD } from "../routes/paths"
+import LoadingScreen from '../components/LoadingScreen';
 // ----------------------------------------------------------------------
 
 type Props = {
-  children: ReactNode;
+    children: ReactNode;
 };
 
 export default function AuthGuard({ children }: Props) {
-  const { isAuthenticated, isInitialized } = useAuth();
 
-  const { pathname, push } = useRouter();
+    const { isAuthenticated, isInitialized, user } = useAuth();
 
-  const [requestedLocation, setRequestedLocation] = useState<string | null>(
-    null
-  );
+    const { pathname, push } = useRouter();
+    const [requestedLocation, setRequestedLocation] = useState<string | null>(null);
+    const [loading, setLoading] = useState(false);
+    let loadding = false
 
-  useEffect(() => {
-    if (requestedLocation && pathname !== requestedLocation) {
-      setRequestedLocation(null);
-      push(requestedLocation);
+    const getRole = () => {
+      if(!loadding) loadding=true
+
+        const role = user.role.toLowerCase();
+        
+        const re = new RegExp(String.raw`dashboard/${role}/?`)
+        // console.log(re, pathname.search(re), pathname.search(re)>=0);
+
+        if (!role || (pathname.search(re))>=0) return;
+        else push(PATH_DASHBOARD[role].root)
+        
+        loadding=false
+        //push((pathname.replace(/(?<=dashboard\/)(.*?)(?=\/)/, role)))\
     }
-  }, [pathname, push, requestedLocation]);
 
-  if (!isInitialized) {
-    return <LoadingScreen />;
-  }
+    useEffect(() => {
+        if (requestedLocation && pathname !== requestedLocation) {
+            setRequestedLocation(null);
+            push(requestedLocation);
+        }
+    }, [pathname, push, requestedLocation]);
 
-  if (!isAuthenticated) {
-    if (pathname !== requestedLocation) {
-      setRequestedLocation(pathname);
+    if (!isInitialized || loadding) {
+        return <LoadingScreen />;
     }
-    return <Login />;
-  }
 
-  return <>{children}</>;
+    if (!isAuthenticated) {
+        if (pathname !== requestedLocation) {
+            setRequestedLocation(pathname);
+        }
+        return <Login />;
+    }
+
+    getRole()
+    return <>{children}</>;
 }
