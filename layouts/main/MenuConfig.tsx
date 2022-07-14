@@ -137,7 +137,7 @@ const phoneMenuConfig = [
     >
       Login
     </Button>,
-    path: PATH_PAGE.library,
+    path: PATH_PAGE.login,
   },
   {
     title: '',
@@ -149,7 +149,7 @@ const phoneMenuConfig = [
     >
       Sign Up
     </Button>,
-    path: PATH_PAGE.library,
+    path: PATH_PAGE.register,
   },
 ];
 

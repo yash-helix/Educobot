@@ -103,7 +103,7 @@ export default function StudentOTPLogin() {
             if(res.data.length>0){
                 let allLessons = await getExpired(res.data);
                 setMasterLessons(allLessons);
-
+                
                 setInfobar({open:false, msg:""})
             }
             else {
@@ -131,54 +131,30 @@ export default function StudentOTPLogin() {
                 return group;
             }, {})
 
+
             // performing operations on grouped levels
             Object.keys(groupedByCategoryArr).map(levelNo => {
                 if (groupedByCategoryArr[levelNo].length > 0) {
                     const firstActiveLessoninLevel = groupedByCategoryArr[levelNo].map(lessonObj => lessonObj?.isActive).indexOf(true);
 
                     let levelArr = [];
-                    if (firstActiveLessoninLevel >= 0) {
+                    // if (firstActiveLessoninLevel >= 0) {
                         // to make lesson in all levels accessible
                         levelArr = groupedByCategoryArr[levelNo].map((lesson, i) => {
+                            console.log(lesson)
                             if (i > firstActiveLessoninLevel && lesson?.edStatus !== "C")
                                 return { ...lesson, isActive: false, inActive: true }
                             else
                                 return { ...lesson }
                         })
                         SetLevelArray(prev => [...prev, levelArr]);
-                    }
-                    else
-                        SetLevelArray(prev => [...prev, levelArr]);
+                    // }
+                    // else
+                    //     SetLevelArray(prev => [...prev, levelArr]);
                 }
             })
+
         }
-
-
-        // MasterLessons.length > 0 &&
-        //     MasterLessons.map((les, index) => {
-        //         let levelArr = MasterLessons.map(lesson => {
-        //             // console.log(lesson?.lsLevel, index)
-        //             return lesson?.lsLevel == index + 1 && lesson
-        //         }).filter(item => item != false)
-                
-        //         if (levelArr.length > 0)
-        //         {
-        //             const firstActiveLessoninLevel = levelArr.map(lessonObj => lessonObj?.isActive).indexOf(true);
-        //             if(firstActiveLessoninLevel >= 0){
-        //                 // to make lesson in all levels accessible
-        //                 levelArr = levelArr.map((lesson, i) => {
-        //                     if(i > firstActiveLessoninLevel)
-        //                         return {...lesson, isActive:false, inActive:true}
-        //                     else 
-        //                         return {...lesson}
-        //                 })
-                        
-        //                 SetLevelArray(prev => [...prev, levelArr]);
-        //             }
-        //             else 
-        //                 SetLevelArray(prev => [...prev, levelArr]);
-        //         }
-        //     })
     }
 
 
@@ -307,6 +283,7 @@ export const LessonCard = ({levelNo, level, userId, postEvalData, CourseOTP} : L
                 return lessonType
         }
     }
+    
 
     const openLesson = async (course: any) => {
         try {
@@ -323,7 +300,7 @@ export const LessonCard = ({levelNo, level, userId, postEvalData, CourseOTP} : L
                 `${process.env.webAppUrl}/${lessonType}/${course.lsID}?user_id=${userId}&otp=${CourseOTP}`:
                 "#"
                 
-                link = lessonType=="quiz" ? `http://localhost:3001/dashboard/quiz/${course.lsID}` : link
+                link = lessonType=="quiz" ? `${process.env.dashboardUrl}/dashboard/quiz/${course.lsID}?user_id=${userId}&otp=${CourseOTP}` : link
             }
             (link && typeof window != 'undefined') && window.open(link)
         }

@@ -14,6 +14,7 @@ module.exports = withTM({
   trailingSlash: true,
   env: {
     webAppUrl:"http://localhost:3003",
+    dashboardUrl:"http://localhost:3001",
     HOST_API_KEY: 'https://api.educobot.com',
     // FIREBASE AUTH
     FIREBASE_API_KEY: 'AIzaSyD7DzkSxY1yJylNNu-hfGUzAFiihcC3WHw',
