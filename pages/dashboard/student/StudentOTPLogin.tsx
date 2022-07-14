@@ -89,6 +89,25 @@ export default function StudentOTPLogin() {
             }
             else return {...lesson, isExpired:true}
         })
+
+        // sorting by ascending order by lesson no
+        allLessons = allLessons.sort((a, b) => {
+            return a?.lsLessonNo - b?.lsLessonNo
+        })
+
+        // getting the latest active lesson and locking rest other lessons after it.
+        const firstActiveLesson = allLessons.map(lessonObj => lessonObj?.isActive).indexOf(true);
+        if(firstActiveLesson>=0){
+           allLessons = allLessons.map((lesson, i) => {
+                if(i>firstActiveLesson && lesson?.edStatus !== "C"){
+                    return {...lesson, inActive:true, isActive:false}
+                }
+                else {
+                    return {... lesson}
+                }
+           })
+        }
+
         return allLessons
     }
 
@@ -102,8 +121,8 @@ export default function StudentOTPLogin() {
             const res = await axios.post("https://api.educobot.com/sessionRoute/getLessonsByPIN4Students", obj);
             if(res.data.length>0){
                 let allLessons = await getExpired(res.data);
+
                 setMasterLessons(allLessons);
-                
                 setInfobar({open:false, msg:""})
             }
             else {
@@ -131,29 +150,17 @@ export default function StudentOTPLogin() {
                 return group;
             }, {})
 
-
-            // performing operations on grouped levels
+            // now getting the lessons of one level and putting in array.
             Object.keys(groupedByCategoryArr).map(levelNo => {
                 if (groupedByCategoryArr[levelNo].length > 0) {
-                    const firstActiveLessoninLevel = groupedByCategoryArr[levelNo].map(lessonObj => lessonObj?.isActive).indexOf(true);
-
                     let levelArr = [];
-                    // if (firstActiveLessoninLevel >= 0) {
-                        // to make lesson in all levels accessible
-                        levelArr = groupedByCategoryArr[levelNo].map((lesson, i) => {
-                            console.log(lesson)
-                            if (i > firstActiveLessoninLevel && lesson?.edStatus !== "C")
-                                return { ...lesson, isActive: false, inActive: true }
-                            else
-                                return { ...lesson }
-                        })
-                        SetLevelArray(prev => [...prev, levelArr]);
-                    // }
-                    // else
-                    //     SetLevelArray(prev => [...prev, levelArr]);
+                    levelArr = groupedByCategoryArr[levelNo].map((lesson, i) => {
+                        return { ...lesson }
+                    })
+
+                    SetLevelArray(prev => [...prev, levelArr]);
                 }
             })
-
         }
     }
 

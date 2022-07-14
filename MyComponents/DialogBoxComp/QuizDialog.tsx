@@ -51,6 +51,7 @@ export default function AlertDialog({ dialogInfo, lsId }: Props) {
     const router = useRouter();
     const { dialogStatus, message, setCurrentQuestion, currentQuestion, noOfQuestions } = dialogInfo;
     const [open, setOpen] = useState(false);
+    const [tries, setTries] = useState(0);
 
     // post eval data
 
@@ -85,28 +86,29 @@ export default function AlertDialog({ dialogInfo, lsId }: Props) {
 
     
     //SAVE COINS
-    const [coins, setCoins] = useState([]);
+    const saveCoins = async (body: any) => {
 
-            const saveCoins = async (body: any) => {
-                // displaying coins logic
-                let arr = ['1', '1', '1'];
-                setCoins(arr)
+        if(tries==0)
+        {
+            body['edcoins'] = 1
+        }
+        else body['edcoins'] = 0
 
-                try {
-                    const res = await axios({
-                        method: "post",
-                        url: "https://api.educobot.com/users/postEvalData",
-                        data: body,
-                        headers: { "Content-Type": "application/json" },
-                    });
-                    if (res.status == 200 && res.data.msg) {
-                        console.log(res.data.msg)
-                    }
-                }
-                catch (error) {
-                    console.log(error)
-                }
+        try {
+            const res = await axios({
+                method: "post",
+                url: "https://api.educobot.com/users/postEvalData",
+                data: body,
+                headers: { "Content-Type": "application/json" },
+            });
+            if (res.status == 200 && res.data.msg) {
+                console.log(res.data.msg)
             }
+        }
+        catch (error) {
+            console.log(error)
+        }
+    }
 
 
             //POST EVAL DATA
@@ -121,7 +123,7 @@ export default function AlertDialog({ dialogInfo, lsId }: Props) {
                     "rollNo": userDetails?.sdRollNo,
                     "pin": userDetails?.otp,
                     "schoolID": userDetails?.sdSchoolID,
-                    "edcoins": totalMarks
+                    "edcoins": 1
                 }
                 await saveCoins(body)
             }
@@ -163,7 +165,6 @@ export default function AlertDialog({ dialogInfo, lsId }: Props) {
                         padding: "0rem 2rem",
                     },
                 }}
-            // onClose={handleClose}
             >
                 <DialogTitle
                     sx={{
@@ -249,7 +250,10 @@ export default function AlertDialog({ dialogInfo, lsId }: Props) {
                                     textTransform: "none",
                                     fontFamily: "Public Sans"
                                 }}
-                                onClick={handleClose}
+                                onClick={()=>{
+                                    handleClose();
+                                    setTries(tries+1)
+                                }}
                                 autoFocus
                             >
                                 Try again
