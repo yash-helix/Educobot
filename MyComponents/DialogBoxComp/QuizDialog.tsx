@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 // @mui
 import { styled } from "@mui/material/styles";
 import {
@@ -20,6 +20,7 @@ import StarDisable from "../../assets/icon_starDisable";
 import Icon_StarFullNew from "../../assets/Icon_starFullNew";
 import Icon_StarEmptyNew from "../../assets/Icon_starEmptyNew";
 import { useRouter } from "next/router";
+import axios from "axios";
 // ----------------------------------------------------------------------
 
 const StyledRating = styled(Rating)({
@@ -43,12 +44,89 @@ type Props = {
         currentQuestion: any;
         noOfQuestions: number;
     };
+    lsId:any;
 };
 
-export default function AlertDialog({ dialogInfo }: Props) {
+export default function AlertDialog({ dialogInfo, lsId }: Props) {
     const router = useRouter();
     const { dialogStatus, message, setCurrentQuestion, currentQuestion, noOfQuestions } = dialogInfo;
     const [open, setOpen] = useState(false);
+
+    // post eval data
+
+    // user details
+    const [userDetails, setUserDetails] = useState<any>([]);
+    const getUserDetails = async(otp: string | string[]) =>{
+        try {
+            let formD = new FormData();
+            formD.append("sdUID", `${router.query?.user_id}`)
+
+            const userDetails = await axios({
+                method: "post",
+                url: "https://appssl.educobot.com:8443/EduCobotWS/studentsWS/getStudents",
+                data: formD,
+                headers: { "Content-Type": "multipart/form-data" },
+            });
+            {
+                let newData = {...userDetails.data.DATA[0], otp}
+                setUserDetails(newData)
+                console.log("got user details in python")
+            }
+        }
+        catch (error) {
+            console.log(error)
+            setUserDetails([])
+        }
+    }
+    useEffect(() => {
+        router.query.otp && getUserDetails(router.query.otp)
+    },[router.query.otp])
+
+
+    
+    //SAVE COINS
+    const [coins, setCoins] = useState([]);
+
+            const saveCoins = async (body: any) => {
+                // displaying coins logic
+                let arr = ['1', '1', '1'];
+                setCoins(arr)
+
+                try {
+                    const res = await axios({
+                        method: "post",
+                        url: "https://api.educobot.com/users/postEvalData",
+                        data: body,
+                        headers: { "Content-Type": "application/json" },
+                    });
+                    if (res.status == 200 && res.data.msg) {
+                        console.log(res.data.msg)
+                    }
+                }
+                catch (error) {
+                    console.log(error)
+                }
+            }
+
+
+            //POST EVAL DATA
+            const postEvalData = async(totalMarks: number) => {
+                let body = {
+                    "userID": userDetails?.sdUID,
+                    "edType": "B",
+                    "std": userDetails?.sdClass,
+                    "div": userDetails?.sdDiv,
+                    "status": "C",
+                    "lessonID": lsId,
+                    "rollNo": userDetails?.sdRollNo,
+                    "pin": userDetails?.otp,
+                    "schoolID": userDetails?.sdSchoolID,
+                    "edcoins": totalMarks
+                }
+                await saveCoins(body)
+            }
+
+
 
     const handleClickOpen = () => {
         setOpen(true);
@@ -58,11 +136,14 @@ export default function AlertDialog({ dialogInfo }: Props) {
         setOpen(false);
     };
 
-    const changingQuestion = () => {
+    const changingQuestion = async() => {
         handleClose();
         if (currentQuestion + 1 === noOfQuestions) {
+            await postEvalData(noOfQuestions)
             router.push("/");
-        } else {
+            //router.push(`/dashboard/student/StudentOTPLogin/?id=${userDetails?.sdUID}&otp=${router.query.otp}`);
+        }
+        else {
             setCurrentQuestion(currentQuestion + 1);
         }
     }

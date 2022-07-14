@@ -30,6 +30,8 @@ export const PATH_PAGE = {
   product: "/product",
   curriculum: "/curriculum",
   library: "/library",
+  login:"/auth/login",
+  register:"/auth/registeration"
 };
 
 export const PATH_DASHBOARD = {

@@ -132,7 +132,7 @@ const Quiz = ({ QuestionArr, id }) => {
                     </Stack>
                 </Box>
             </Container>
-            <QuizDialog dialogInfo={dialogInfo} />
+            <QuizDialog dialogInfo={dialogInfo} lsId={id}/>
         </Page >
 
     )
