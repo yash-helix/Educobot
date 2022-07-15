@@ -176,7 +176,8 @@ export default function StudentOTPLogin() {
             "rollNo":lesson.edRollNo,
             "pin": lesson.edPIN,
             "schoolID": lesson.edSchoolID,
-            "edcoins": 0
+            "edcoins": 0,
+            "coins" :0
         }
         const res = await axios.post("https://api.educobot.com/users/postEvalData", body);
         console.log(res)
