@@ -318,7 +318,8 @@ export default function ViewProgress() {
                             else if(student.edStatus=="L"){
                                 return <UserIcon UserIcon={<UserYellow width={100} height={100}/>} student={student}/>
                             }
-                            else if(student.edStatus=="X"){
+                            // if(student.edStatus=="X")
+                            else{
                                 return <UserIcon UserIcon={<UserGrey width={100} height={100}/>} student={student}/>
                             }
                         })

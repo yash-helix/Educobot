@@ -88,8 +88,7 @@ export default function AlertDialog({ dialogInfo, lsId }: Props) {
     //SAVE COINS
     const saveCoins = async (body: any) => {
 
-        if(tries==0)
-        {
+        if (tries == 0) {
             body['edcoins'] = 1
         }
         else body['edcoins'] = 0
@@ -111,22 +110,22 @@ export default function AlertDialog({ dialogInfo, lsId }: Props) {
     }
 
 
-            //POST EVAL DATA
-            const postEvalData = async(totalMarks: number) => {
-                let body = {
-                    "userID": userDetails?.sdUID,
-                    "edType": "B",
-                    "std": userDetails?.sdClass,
-                    "div": userDetails?.sdDiv,
-                    "status": "C",
-                    "lessonID": lsId,
-                    "rollNo": userDetails?.sdRollNo,
-                    "pin": userDetails?.otp,
-                    "schoolID": userDetails?.sdSchoolID,
-                    "edcoins": 1
-                }
-                await saveCoins(body)
-            }
+    //POST EVAL DATA
+    const postEvalData = async (totalMarks: number) => {
+        let body = {
+            "userID": userDetails?.sdUID,
+            "edType": "B",
+            "std": userDetails?.sdClass,
+            "div": userDetails?.sdDiv,
+            "status": "C",
+            "lessonID": lsId,
+            "rollNo": userDetails?.sdRollNo,
+            "pin": userDetails?.otp,
+            "schoolID": userDetails?.sdSchoolID,
+            "edcoins": 1
+        }
+        await saveCoins(body)
+    }
 
 
 

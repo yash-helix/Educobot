@@ -20,11 +20,11 @@ import { TableMoreMenu } from "../../../../components/table";
 
 // ----------------------------------------------------------------------
 type row = {
-  Name?: string;
+  sdFName?: string;
   edStatus?: string;
-  Incomplete?: number;        
+  Incomplete?: number;    
   TotalCoins?: number;
-  RollNo?:number;
+  sdRollNo?:number;
   Complete?:number
 };
 
@@ -47,12 +47,9 @@ export default function StudentTableRow({
 }: Props) {
   const theme = useTheme();
 
-  const { Name, edStatus, Incomplete, TotalCoins, RollNo } = row;
-  // console.log(Name, edStatus, Incomplete, TotalCoins, RollNo)
+  const { sdFName, edStatus, Incomplete, TotalCoins,sdRollNo } = row;
 
   const [openMenu, setOpenMenuActions] = useState<HTMLElement | null>(null);
-
-  const [status, setStatus] = useState({color:"default", text:""});
 
   const handleOpenMenu = (event: React.MouseEvent<HTMLElement>) => {
     setOpenMenuActions(event.currentTarget);
@@ -63,24 +60,35 @@ export default function StudentTableRow({
   };
   
 
-  const getStatus = ()=>{
-    if(edStatus === 'D'){
-      setStatus({color:"success", text:"Done"})
+  const getStatus = (edStatus)=>{
+    if(edStatus === 'C'){
+      return "Done"
     }
     else if(edStatus === 'I'){
-      setStatus({color:"error", text:"Incomplete"})
+      return "Incomplete"
     }
     else if(edStatus === 'X'){
-      setStatus({color:"default", text:"Not Started"})
+      return "Not Started"
     }
     else if(edStatus === 'L'){
-      setStatus({color:"warning", text:"L"})
+      return"Doing" 
     }
   }
 
-  useEffect(() => {
-    getStatus();
-  },[]);
+  const getStatusColor = (edStatus)=>{
+    if(edStatus === 'C'){
+      return "success"
+    }
+    else if(edStatus === 'I'){
+      return"error"
+    }
+    else if(edStatus === 'X'){
+      return"default"
+    }
+    else if(edStatus === 'L'){
+      return"warning"
+    }
+  }
 
   return (
     <TableRow hover selected={selected}>
@@ -92,7 +100,7 @@ export default function StudentTableRow({
         {/* <Avatar alt={name} src={avatarUrl} sx={{ mr: 2 }} /> */}
         <Stack>
           <Typography variant="subtitle2" noWrap>
-            {Name}
+            {sdFName}
           </Typography>
           {/* <Typography variant="subtitle2" noWrap color={"text.secondary"}>
             {email}
@@ -100,15 +108,15 @@ export default function StudentTableRow({
         </Stack>
       </TableCell>
 
-      <TableCell align="left">{RollNo}</TableCell>
+      <TableCell align="left">{ sdRollNo}</TableCell>
 
       <TableCell align="left" sx={{ textTransform: "capitalize" }}>
         <Label
           variant={theme.palette.mode === "light" ? "ghost" : "filled"}
-          color={status.color}
+          color={getStatusColor(edStatus)}
           sx={{ textTransform: "capitalize", fontWeight:550, fontSize:"14px" ,fontFamily:"Public Sans" }}
         >
-          {status.text}
+          {getStatus(edStatus)}
         </Label>
       </TableCell>
 

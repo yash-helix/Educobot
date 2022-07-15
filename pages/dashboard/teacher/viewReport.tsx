@@ -265,7 +265,7 @@ export default function ViewReport() {
 
 
     return (
-        <Page title="Teacher : View Progress">
+        <Page title="Teacher : View Report">
 
             {/* maxWidth={themeStretch ? false : "xl"} */}
             <Container>
