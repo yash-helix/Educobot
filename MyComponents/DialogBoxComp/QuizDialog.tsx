@@ -90,8 +90,12 @@ export default function AlertDialog({ dialogInfo, lsId }: Props) {
 
         if (tries == 0) {
             body['edcoins'] = 1
+            body['coins'] = 1
         }
-        else body['edcoins'] = 0
+        else{
+            body['edcoins'] = 0
+            body['coins'] = 0
+        }
 
         try {
             const res = await axios({
@@ -122,7 +126,7 @@ export default function AlertDialog({ dialogInfo, lsId }: Props) {
             "rollNo": userDetails?.sdRollNo,
             "pin": userDetails?.otp,
             "schoolID": userDetails?.sdSchoolID,
-            "edcoins": 1
+            "coins": 1.0
         }
         await saveCoins(body)
     }
