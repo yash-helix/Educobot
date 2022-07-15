@@ -84,7 +84,7 @@ export default function StudentOTPLogin() {
 
     const getExpired = async(allLessons) => {
         allLessons = allLessons.map(lesson => {
-            if(lesson?.edStatus === "X"){
+            if(lesson?.edStatus === "X" || lesson?.edStatus === "L" || lesson?.edStatus === "I"){
                 return {...lesson, isActive:true}
             }
             else return {...lesson, isExpired:true}

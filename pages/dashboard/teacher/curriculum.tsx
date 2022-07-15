@@ -115,7 +115,7 @@ export default function Curriculum2_1() {
     const [OpenTitleDDL, setOpenTitleDDL] = useState<null | HTMLElement>(null);
     const [classValue, setClassValue] = useState("5");
     const [divisionValue, setDivisionValue] = useState("Division");
-    const [CourseName, setCourseName] = useState("Introduction To Coding");
+    const [CourseName, setCourseName] = useState(localStorage.getItem("course") || "Introduction To Coding");
 
     const [MasterLessons, setMasterLessons] = useState([]);
     const [LevelArray, SetLevelArray] = useState([]);
