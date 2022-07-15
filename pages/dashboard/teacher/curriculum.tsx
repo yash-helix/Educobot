@@ -341,11 +341,16 @@ export default function Curriculum2_1() {
     }
     
 
-    // division value
+    // division value and course value
     useEffect(() => {
         const div = localStorage.getItem("div");
+        const course = localStorage.getItem("course");
         if(div && div!==""){
             setDivisionValue(div)
+        }
+
+        if(course && course!==""){
+            setCourseName(course)
         }
     }, [])
     
@@ -402,6 +407,7 @@ export default function Curriculum2_1() {
     const handleCloseTitleDDL = (event: any, title: string) => {
         setCourseName(title)
         setOpenTitleDDL(null)
+        localStorage.setItem("course", title)
     };
 
 

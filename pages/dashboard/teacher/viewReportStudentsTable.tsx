@@ -132,7 +132,7 @@ export default function ReportStudentList(props) {
             {
                 return {...student, edStatus:"I"}
             }
-            else return {student, edStatus:"D"}
+            else return {student, edStatus:"C"}
         });
         setTableData(arr);
     }
@@ -247,10 +247,10 @@ export default function ReportStudentList(props) {
             count: getLengthByStatus('L'),
         },
         {
-            value: "D",
+            value: "C",
             label: "Done",
             color: "success",
-            count: getLengthByStatus('D'),
+            count: getLengthByStatus('C'),
         },
         {
             value: "I",
@@ -467,13 +467,8 @@ function applySortFilter({
 
   if (filterCourse !== "all") {
     tableData = tableData.filter(
-      (item: Record<string, any>) => {
-          if(isArray(filterCourse))
-          {
-            return filterCourse.includes(item.edStatus)
-          }
-          else return item.edStatus == filterCourse
-      });
+      (item: Record<string, any>) => item.edStatus === filterDivision
+    );
   }
   return tableData;
 }

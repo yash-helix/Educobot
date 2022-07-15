@@ -167,15 +167,16 @@ export default function StudentOTPLogin() {
 
     const postEvalData = async(lesson) => {
         const body = {
-            "userID": lesson.edUID,
+            "userID": lesson.edUserID,
             "edType": lesson.edType,
             "std": lesson.edStd,
-            "div": lesson.edRollNo,
-            "status": lesson.edStatus,
+            "div": lesson.edDiv,
+            "status": 'L',
             "lessonID": lesson.lsID,
             "rollNo":lesson.edRollNo,
             "pin": lesson.edPIN,
-            "schoolID": lesson.edSchoolID
+            "schoolID": lesson.edSchoolID,
+            "edcoins": 0
         }
         const res = await axios.post("https://api.educobot.com/users/postEvalData", body);
         console.log(res)
@@ -294,22 +295,26 @@ export const LessonCard = ({levelNo, level, userId, postEvalData, CourseOTP} : L
 
     const openLesson = async (course: any) => {
         try {
-            const userId = localStorage.getItem("userID");
             
-            let link = userId ?
-            `${process.env.webAppUrl}/game/${course?.lsID}?user_id=${userId}&otp=${CourseOTP}` :
-            "#";
-            
-            if(course.lsCourse == "Python Basic")
-            {
-                const lessonType = getPythonLessonTypefromId(course);
-                link = lessonType !== "" ?
-                `${process.env.webAppUrl}/${lessonType}/${course.lsID}?user_id=${userId}&otp=${CourseOTP}`:
-                "#"
+            if(postEvalData(course)){
                 
-                link = lessonType=="quiz" ? `${process.env.dashboardUrl}/dashboard/quiz/${course.lsID}?user_id=${userId}&otp=${CourseOTP}` : link
+                const userId = localStorage.getItem("userID");
+                
+                let link = userId ?
+                `${process.env.webAppUrl}/game/${course?.lsID}?user_id=${userId}&otp=${CourseOTP}` :
+                "#";
+                
+                if(course.lsCourse == "Python Basic")
+                {
+                    const lessonType = getPythonLessonTypefromId(course);
+                    link = lessonType !== "" ?
+                    `${process.env.webAppUrl}/${lessonType}/${course.lsID}?user_id=${userId}&otp=${CourseOTP}`:
+                    "#"
+                    
+                    link = lessonType=="quiz" ? `${process.env.dashboardUrl}/dashboard/quiz/${course.lsID}?user_id=${userId}&otp=${CourseOTP}` : link
+                }
+                (link && typeof window != 'undefined') && window.open(link)
             }
-            (link && typeof window != 'undefined') && window.open(link)
         }
         catch (error) {
             console.log(error)

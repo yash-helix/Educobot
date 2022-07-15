@@ -128,7 +128,8 @@ export default function ProgressStudentList(props) {
     const SetData = () => {
       let arr = props.students.map(student => {
         if (student?.edStatus == 'L') return { ...student, edStatus: "L" }
-        else if(student?.edStatus == 'C') return { student, edStatus: "D" }
+        else if(student?.edStatus == 'C') return { student, edStatus: "C" }
+        else if(student?.edStatus == 'I') return { student, edStatus: "I" }
         else return { student, edStatus: "X" }
       });
       setTableData(arr);
@@ -243,16 +244,16 @@ export default function ProgressStudentList(props) {
       count: getLengthByStatus('L'),
     },
     {
-      value: "D",
+      value: "C",
       label: "Done",
       color: "success",
-      count: getLengthByStatus('D'),
+      count: getLengthByStatus('C'),
     },
     {
-      value: "",
+      value: "I",
       label: "Incomplete",
       color: "error",
-      count: getLengthByStatus(''),
+      count: getLengthByStatus('I'),
     },
   ] as const;
   
@@ -341,15 +342,10 @@ export default function ProgressStudentList(props) {
                   {dataFiltered
                     .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                     .map((row) => {
-
                       const obj ={
-                        ...row,
-                        Name:row.student?.sdFName,
-                        RollNo: row.student?.sdRollNo,
-                        Incomplete: row.student?.Incomplete,
-                        TotalCoins: row.student?.TotalCoins
+                        ...row.student,
+                        ...row
                       }
-                      
                       return <StudentTableRow
                         key={row.sdRollNo}
                         row={obj}
@@ -460,8 +456,11 @@ function applySortFilter({
 
   if (filterCourse !== "all") {
     tableData = tableData.filter(
-      (item: Record<string, any>) => item.edStatus == filterCourse
+      (item: Record<string, any>) => {
+        return item.edStatus === filterCourse
+      }
     );
   }
+
   return tableData;
 }
