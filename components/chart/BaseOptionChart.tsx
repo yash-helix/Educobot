@@ -6,6 +6,7 @@ import { useTheme } from '@mui/material/styles';
 
 export default function BaseOptionChart(): ApexOptions {
   const theme = useTheme();
+  // const mode = settings.themeMode === 'light' ? 'dark' : 'light';
 
   const LABEL_TOTAL = {
     show: true,
@@ -102,9 +103,10 @@ export default function BaseOptionChart(): ApexOptions {
 
     // Tooltip
     tooltip: {
+      theme: theme.palette.mode,
       x: {
         show: false,
-      },
+      }
     },
 
     // Legend

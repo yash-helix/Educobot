@@ -23,6 +23,8 @@ import { useRouter } from "next/router";
 import axios from "axios";
 // ----------------------------------------------------------------------
 
+const url:any = process.env.devUrl;
+
 const StyledRating = styled(Rating)({
     "& .MuiRating-icon": {
         // color: "#fff",
@@ -64,7 +66,7 @@ export default function AlertDialog({ dialogInfo, lsId }: Props) {
 
             const userDetails = await axios({
                 method: "post",
-                url: "https://appssl.educobot.com:8443/EduCobotWS/studentsWS/getStudents",
+                url: `${url.EduCobotBaseUrl}/${url.getStudents}`,
                 data: formD,
                 headers: { "Content-Type": "multipart/form-data" },
             });

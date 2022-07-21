@@ -56,6 +56,7 @@ import axios from "axios";
 
 // ----------------------------------------------------------------------
 
+const url:any=  process.env.devUrl;
 
 const classArr = ["all", "6th", "7th", "8th", "9th", "10th"];
 
@@ -89,7 +90,7 @@ export default function ProgressStudentList(props) {
       formData.append("sdClass", "5");
       formData.append("sdDiv", "A");
 
-      await axios.post("https://appssl.educobot.com:8443/EduCobotWS/studentsWS/getStudents", formData, {
+      await axios.post(`${url.EduCobotBaseUrl}/${url.getStudents}`, formData, {
         headers:{
           "Content-Type":"multipart/form-data"
         }
@@ -396,7 +397,7 @@ type row = {
     sdFName?: string;
     email?:string;
     edStatus?: string;
-    incomplete?: number;        
+    incomplete?: number;
     points?: number;
     sdRollNo?:number;
     student?: any
@@ -432,9 +433,9 @@ function applySortFilter({
   if (filterName) {
     tableData = tableData.filter(
       (item: Record<string, any>) =>
-        item?.sdFName?.toLowerCase()?.indexOf(filterName?.toLowerCase()) !== -1
+        item?.student?.sdFName?.toLowerCase()?.indexOf(filterName?.toLowerCase()) !== -1
     );
-  }
+  } 
 
   if (filterStatus !== "all") {
     tableData = tableData.filter(

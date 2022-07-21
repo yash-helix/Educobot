@@ -34,9 +34,7 @@ import MoreMenuButton from "../../../components/MoreMenuButton"
 import useLocales from '../../../hooks/useLocales';
 import MemoIcon_userGrey from "../../../assets/userIcons/UserGrey";
 
-
-// python json
-import {pythonJson} from "../../../python";
+const url:any = process.env.devUrl;
 
 // ----------------------------------------------------------------------
 
@@ -63,12 +61,10 @@ export default function StudentOTPLogin() {
     const [MasterLessons, setMasterLessons] = useState([]);
     const [LevelArray, SetLevelArray] = useState([]);
 
-    const token = localStorage.getItem("accessToken");
-    
 
     const getStudentsData = async(userID)=>{
         try {
-            const res = await axios.post("https://api.educobot.com/users/getUserDetails", {userID});
+            const res = await axios.post(`${url.EduCobotBaseUrl}/${url.getUserDetails}`, {userID});
             if(res.data.data.length>0){
                 setStudent(res.data.data[0])
                 localStorage.setItem("userID", res.data.data[0]?.userID)
@@ -80,6 +76,7 @@ export default function StudentOTPLogin() {
             console.log(error)
         }
     }
+
 
 
     const getExpired = async(allLessons) => {
@@ -112,13 +109,14 @@ export default function StudentOTPLogin() {
     }
 
 
+
     const getLessonsData = async(otp) => {
         try {
             const obj = {
                 "rollNo":student.euRollNo,
                 "otp":otp
             }
-            const res = await axios.post("https://api.educobot.com/sessionRoute/getLessonsByPIN4Students", obj);
+            const res = await axios.post(`${url.EduCobotBaseUrl}/${url.getLessonsByPIN4Students}`, obj);
             if(res.data.length>0){
                 let allLessons = await getExpired(res.data);
 
@@ -165,6 +163,7 @@ export default function StudentOTPLogin() {
     }
 
 
+    
     const postEvalData = async(lesson) => {
         const body = {
             "userID": lesson.edUserID,
@@ -179,7 +178,7 @@ export default function StudentOTPLogin() {
             "edcoins": 0,
             "coins" :0
         }
-        const res = await axios.post("https://api.educobot.com/users/postEvalData", body);
+        const res = await axios.post(`${url.EduCobotBaseUrl}/${url.postEvalData}`, body);
         console.log(res)
         if(res.data?.msg!=="") return true
         else return false
@@ -439,7 +438,7 @@ export const LessonCard = ({levelNo, level, userId, postEvalData, CourseOTP} : L
                             </Stack>
                             {
                                 lesson.lsCourse !== "Python Basic" &&
-                                <Image alt="image" src={`https://app.educobot.com/liveLessons/thumbNails/${lesson.lsName}.png`} borderRadius={"8px"} />
+                                <Image alt="image" src={`${url.imageLink}/${lesson.lsName}.png`} borderRadius={"8px"} />
                             }
 
                             <Stack gap={1} padding={1}>

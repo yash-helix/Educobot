@@ -20,6 +20,8 @@ import axios from "../utils/axios";
 import Iconify from "../components/Iconify";
 import { FormProvider, RHFSelect, RHFTextField } from "../components/hook-form";
 
+const {postContactUS}:any = process.env.devUrl;
+
 // ----------------------------------------------------------------------
 
 type FormValuesProps = {
@@ -105,7 +107,7 @@ export default function ContactUsForm() {
       //   },
       // });
 
-      const response = await axios.post("/users/postContactUS", apibody);
+      const response = await axios.post(postContactUS, apibody);
       response.status === 200 && reset();
       console.log(response);
     } catch (error: any) {

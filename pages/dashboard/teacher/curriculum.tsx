@@ -79,12 +79,7 @@ import Link from "next/link";
 import uuidv4 from "../../../utils/uuidv4";
 import LockIcon from "../../../assets/icon_Lock";
 
-// python json
-// import {pythonJson} from "../../../python";
-
-// ----------------------------------------------------------------------
-
-// ----------------------------------------------------------------------
+const url:any = process.env.devUrl;
 
 Curriculum2_1.getLayout = function getLayout(page: React.ReactElement) {
     return <Layout>{page}</Layout>;
@@ -95,10 +90,6 @@ Curriculum2_1.getLayout = function getLayout(page: React.ReactElement) {
 const CLASS_DATA = ["5", "6", "7", "8"];
 const DIVISION_DATA = ["A", "B", "C", "D"];
 const CourseNames = ["Introduction To Coding", "Python Basic", "Certificate in Data Science"];
-const expiredLessons = [
-    { spLessonID: "4bda4814-a2b1-4c4f-b102-eda5181bd0f8", otp: 3245 },
-    { spLessonID: "e0c38e50-cbb3-455f-ae16-d737fc624b24", otp: 1234 }
-];
 let expired_Lessons = [];
 let open_lessons = [];
 
@@ -131,7 +122,7 @@ export default function Curriculum2_1() {
         
         if (classValue !== "Class" && divisionValue !== "Division") {
             try {
-                const response = await axios.post("https://api.educobot.com/sessionRoute/getClosedPIN",
+                const response = await axios.post(`${url.EduCobotBaseUrl}/${url.getClosePin}`,
                 { "std": classValue, "div": divisionValue, "course": CourseName, "schoolID": schoolID },
                 {
                     headers: {
@@ -170,7 +161,7 @@ export default function Curriculum2_1() {
             let body = { "std": classValue, "div": divisionValue, "course": CourseName, "schoolID": schoolID }
             
             try {
-                const res = await axios.post("https://api.educobot.com/sessionRoute/getOpenPIN", body,
+                const res = await axios.post(`${url.EduCobotBaseUrl}/${url.getOpenPIN}`, body,
                 {
                     headers: { 'Content-Type': 'application/json', "authorization": `Bearer ${token}` }
                 });
@@ -229,7 +220,7 @@ export default function Curriculum2_1() {
         let body = { courseName: CourseName }
         
         if (divisionValue !== "Division") {
-            await axios.post("https://api.educobot.com/lessonsRoute/getLessonsByCourse", body,
+            await axios.post(`${url.EduCobotBaseUrl}/${url.getLessonsByCourse}`, body,
             {
                 headers: { 'Content-Type': 'application/json' }
             })
@@ -254,7 +245,7 @@ export default function Curriculum2_1() {
     
     const getAllLessonData = async () => {
         let body = { courseName: CourseName }
-        await axios.post("https://api.educobot.com/lessonsRoute/getLessonsByCourse", body,
+        await axios.post(`${url.EduCobotBaseUrl}/${url.getLessonsByCourse}`, body,
             {
                 headers: { 'Content-Type': 'application/json' }
             })
@@ -296,7 +287,7 @@ export default function Curriculum2_1() {
                 "schoolID": schoolID
             }
             try {
-                const res = await axios.post("https://api.educobot.com/sessionRoute/generateOTP",
+                const res = await axios.post(`${url.EduCobotBaseUrl}/${url.generateOTP}`,
                 body,
                 { headers: { 'Content-Type': 'application/json', 'authorization': `Bearer ${localStorage.getItem("accessToken")}` } })
                 
@@ -332,7 +323,7 @@ export default function Curriculum2_1() {
                 "operation": "I",
                 "schoolID": localStorage.getItem("schoolID")
             }
-            const res = await axios.post("https://api.educobot.com/sessionRoute/postOTPLesson", body)
+            const res = await axios.post(`${url.EduCobotBaseUrl}/${url.postOTPLesson}`, body)
             getAllLessonData1();
         }
         catch (error) {
@@ -868,11 +859,11 @@ export const LessonCard = (
                                                 </Grid>
                                             ))}
                                         </Grid>
-
                                     </Stack>
+
                                     {
                                         course.lsCourse !== "Python Basic" &&
-                                        <Image alt="image" src={`https://app.educobot.com/liveLessons/thumbNails/${course.lsName}.png`} borderRadius={"8px"} />
+                                        <Image alt="image" src={`${url.imageLink}/${course.lsName}.png`} borderRadius={"8px"} />
                                     }
 
                                     <Stack gap={1} padding={1}>

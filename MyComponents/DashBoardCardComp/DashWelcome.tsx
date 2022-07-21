@@ -42,7 +42,7 @@ export default function DashWelcome() {
   const theme = useTheme();
   const [selectedCourse, setSelectedCourse] = useState("python");
 
-  const [CourseName, setCourseName] = useState("Introduction To Coding");
+  const [CourseName, setCourseName] = useState(localStorage.getItem("course") || "Introduction To Coding");
   const [OpenTitleDDL, setOpenTitleDDL] = useState<null | HTMLElement>(null);
 
   const RegisterSchema = Yup.object().shape({
@@ -99,6 +99,7 @@ export default function DashWelcome() {
   const handleCloseTitleDDL = (event: any, title: string) => {
     setCourseName(title)
     setOpenTitleDDL(null)
+    localStorage.setItem("course", title)
   };
 
 

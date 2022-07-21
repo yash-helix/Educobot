@@ -56,20 +56,7 @@ import axios from "axios";
 
 // ----------------------------------------------------------------------
 
-const STATUS_OPTIONS = ["all", "active", "banned"];
-
-const ROLE_OPTIONS = [
-  "all",
-  "ux designer",
-  "full stack designer",
-  "backend developer",
-  "project manager",
-  "leader",
-  "ui designer",
-  "ui/ux designer",
-  "front end developer",
-  "full stack developer",
-];
+const url:any = process.env.devUrl;
 
 // const classArr = data.map((record) => {
 //   return record.class;
@@ -107,7 +94,7 @@ export default function StudentList() {
       formData.append("sdClass", "5");
       formData.append("sdDiv", "A");
 
-      await axios.post("https://appssl.educobot.com:8443/EduCobotWS/studentsWS/getStudents", formData, {
+      await axios.post(`${url.EduCobotBaseUrl}/${url.getStudents}`, formData, {
         headers:{
           "Content-Type":"multipart/form-data"
         }

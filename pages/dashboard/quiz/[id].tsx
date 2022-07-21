@@ -11,8 +11,10 @@ import QuizDialog from '../../../MyComponents/DialogBoxComp/QuizDialog';
 import axios from 'axios';
 import { GetServerSideProps } from "next/types";
 
+const url:any = process.env.devUrl;
+
 export const getServerSideProps: GetServerSideProps = async (context) => {
-    const response = await fetch(`https://app.educobot.com/liveLessons/pythonQuiz/${context.params.id}.json`);
+    const response = await fetch(`${process.env.webApp}/liveLessons/pythonQuiz/${context.params.id}.json`);
 
     if (response.status === 404) {
         return {
@@ -41,7 +43,7 @@ const Quiz = ({ QuestionArr, id }) => {
         let formData = new FormData();
         formData.append("lessonID", id);
 
-        await axios.post("https://appssl.educobot.com:8443/EduCobotWS/lessonsWS/getLessonsByID", formData, {
+        await axios.post(`${url.EduCobotBaseUrl}/${url.getLessonByID}`, formData, {
             headers: {
                 "Content-Type": "multipart/form-data"
             }
