@@ -55,6 +55,9 @@ import {
 import axios from "axios";
 import { isArray } from "lodash";
 
+
+const url:any = process.env.devUrl;
+
 // ----------------------------------------------------------------------
 
 
@@ -90,7 +93,7 @@ export default function ReportStudentList(props) {
       formData.append("sdClass", "5");
       formData.append("sdDiv", "A");
 
-      await axios.post("https://appssl.educobot.com:8443/EduCobotWS/studentsWS/getStudents", formData, {
+      await axios.post(`${url.EduCobotBaseUrl}/${url.getStudents}`, formData, {
         headers:{
           "Content-Type":"multipart/form-data"
         }
@@ -348,8 +351,7 @@ export default function ReportStudentList(props) {
                         const obj = {
                             ...row,
                             edStatus: row?.edStatus,
-                            TotalCoins: row?.totalCoins,
-                            Incomplete: row?.NotLogged + row?.InProgress
+                            Incomplete: parseInt(row?.NotLogged) + parseInt(row?.Incomplete)
                         }
 
                         return obj?.edStatus ?
@@ -359,7 +361,7 @@ export default function ReportStudentList(props) {
                             selected={selected.includes(`${row.RollNo}`)}
                             onSelectRow={() => onSelectRow(`${row.RollNo}`)}
                             onDeleteRow={() => handleDeleteRow(`${row.RollNo}`)}
-                            onEditRow={() => handleEditRow(row.Name)}
+                            onEditRow={() => handleEditRow(row.sdFName)}
                             page={"ViewReport"}
                         />
                         :
@@ -402,14 +404,15 @@ export default function ReportStudentList(props) {
 // ----------------------------------------------------------------------
 
 type row = {
-    Name?: string;
+    Incomplete: string;
+    sdFName?: string;
     email?:string;
     edStatus?: string;
-    incomplete?: number;        
+    incomplete?: number;
     points?: number;
     RollNo?:number;
     totalCoins?:number
-    NotLogged?: number
+    NotLogged?: string
     InProgress?:number
 };
 
@@ -443,7 +446,7 @@ function applySortFilter({
   if (filterName) {
     tableData = tableData.filter(
       (item: Record<string, any>) =>
-        item.Name.toLowerCase().indexOf(filterName.toLowerCase()) !== -1
+        item.sdFName.toLowerCase().indexOf(filterName.toLowerCase()) !== -1
     );
   }
 
@@ -467,7 +470,7 @@ function applySortFilter({
 
   if (filterCourse !== "all") {
     tableData = tableData.filter(
-      (item: Record<string, any>) => item.edStatus === filterDivision
+      (item: Record<string, any>) => item.edStatus === filterCourse
     );
   }
   return tableData;

@@ -263,6 +263,7 @@ import axios from "../utils/axios";
 import { isValidToken, setSession } from "../utils/jwt";
 import { id } from "date-fns/locale";
 // ----------------------------------------------------------------------
+const url:any = process.env.devUrl;
 
 const ADMIN_EMAILS = ["demo@minimals.cc"];
 
@@ -430,7 +431,7 @@ function AuthProvider({ children }: AuthProviderProps) {
 
   const login = async (email: string, password: string) => {
       localStorage.removeItem("method");
-      const response = await axios.post("/users/getUser", {
+      const response = await axios.post(`${url.EduCobotBaseUrl}/${url.getUser}`, {
           email,
           password,
       });

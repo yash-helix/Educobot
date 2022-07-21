@@ -137,7 +137,7 @@ export const dashboardCardData = [
         title: "Bunny & Carrot",
         tags: ["tag1", "tag2", "tag3"],
         desc: "Help bunny to eat the carrot and return home",
-        ratings: 1.5,
+        ratings: 3.9,
         status: "done",
         img: "/imgs/rabbitImg.png"
     },

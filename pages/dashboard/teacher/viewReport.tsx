@@ -41,151 +41,11 @@ import ProgressStudentList from './viewReportStudentsTable'
 import axios from 'axios'
 import ReportStudentList from './viewReportStudentsTable'
 
+const url:any = process.env.devUrl;
 
 ViewReport.getLayout = function getLayout(page: React.ReactElement) {
     return <Layout>{page}</Layout>
 }
-
-
-const studentsDummyData = [
-    {
-        roll:"1",
-        status:2
-    },
-    {
-        roll:"2",
-        status:3
-    },
-    {
-        roll:"3",
-        status:1
-    },
-    {
-        roll:"4",
-        status:4
-    },
-    {
-        roll:"1",
-        status:2
-    },
-    {
-        roll:"2",
-        status:3
-    },
-    {
-        roll:"3",
-        status:1
-    },
-    {
-        roll:"4",
-        status:4
-    },
-    {
-        roll:"2",
-        status:3
-    },
-    {
-        roll:"3",
-        status:1
-    },
-    {
-        roll:"4",
-        status:4
-    },
-    {
-        roll:"1",
-        status:2
-    },
-    {
-        roll:"2",
-        status:3
-    },
-    {
-        roll:"3",
-        status:1
-    },
-    {
-        roll:"3",
-        status:1
-    },
-    {
-        roll:"4",
-        status:4
-    },
-    {
-        roll:"1",
-        status:2
-    },
-    {
-        roll:"1",
-        status:2
-    },
-    {
-        roll:"2",
-        status:3
-    },
-    {
-        roll:"3",
-        status:1
-    },
-    {
-        roll:"4",
-        status:4
-    },
-    {
-        roll:"1",
-        status:2
-    },
-    {
-        roll:"2",
-        status:3
-    },
-    {
-        roll:"3",
-        status:1
-    },
-    {
-        roll:"4",
-        status:4
-    },
-    {
-        roll:"2",
-        status:3
-    },
-    {
-        roll:"3",
-        status:1
-    },
-    {
-        roll:"4",
-        status:4
-    },
-    {
-        roll:"1",
-        status:2
-    },
-    {
-        roll:"2",
-        status:3
-    },
-    {
-        roll:"3",
-        status:1
-    },
-    {
-        roll:"3",
-        status:1
-    },
-    {
-        roll:"4",
-        status:4
-    },
-    {
-        roll:"1",
-        status:2
-    },
-]
-
 const legends = [
     {
         text:"Not Started",
@@ -214,14 +74,14 @@ export default function ViewReport() {
     
     const { themeStretch } = useSettings();
     const [lessonData, setLessonData] = useState({lsName:null, lsLessonNo:null});
-    const [data, setData] = useState(studentsDummyData);
+    const [data, setData] = useState([]);
     const [students, setStudents] = useState([]);
 
     const getLessonByID = async (id) => {
         try {
             const formData = new FormData();
             formData.append("lessonID", id);
-            const response = await axios.post("https://appssl.educobot.com:8443/EduCobotWS/lessonsWS/getLessonsByID",
+            const response = await axios.post(`${url.EduCobotBaseUrl}/${url.getLessonByID}`,
             formData,
             {
                 headers: { 'Content-Type': 'multipart/form-data' }
@@ -246,7 +106,9 @@ export default function ViewReport() {
                 "lessonID":query.lsID,
                 "course" : query.course,
             }
-            const res = await axios.post("https://api.educobot.com/lessonsRoute/getClosedPINStudentsProgress", body)
+            console.log(body)
+            const res = await axios.post(`${url.EduCobotBaseUrl}/${url.getClosedPinStudentsProgress}`, body)
+            console.log(res.data)
             if(res.data.length>0)
             {
                 setStudents(res.data)
@@ -312,7 +174,7 @@ export default function ViewReport() {
                 <Grid container spacing={.8} mt={3.2} gap={1.3} gridTemplateColumns="repeat(10, 1fr)" gridTemplateRows="repeat(4, 1fr)">
                     {
                         students.map((student, i)=>{
-                            if(student.Completed!=0){
+                            if(student.edStatus!=="I"){
                                 return <UserIcon UserIcon={<UserGreen width={100} height={100}/>} student={student}/>
                             }
                             else{
@@ -335,7 +197,7 @@ export default function ViewReport() {
 
 type PropTypes = {
     UserIcon?: React.ReactNode,
-    student:{edStatus:string, RollNo:string},
+    student:{edStatus:string, RollNo:string, sdRollNo:string},
 }
 
 const UserIcon : React.FC<PropTypes> = (props) => {
@@ -350,7 +212,7 @@ const UserIcon : React.FC<PropTypes> = (props) => {
                 left: '50%',
                 transform:"translate(-50%)"
             }}>
-                {props.student?.RollNo}
+                {props.student?.sdRollNo}
             </Typography>
         </Stack>
     </Grid>

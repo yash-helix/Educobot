@@ -40,6 +40,7 @@ import UserGreen from '../../../assets/userIcons/UserGreen';
 import ProgressStudentList from './viewProgressStudentsTable'
 import axios from 'axios'
 
+const url:any = process.env.devUrl;
 
 ViewProgress.getLayout = function getLayout(page: React.ReactElement) {
     return <Layout>{page}</Layout>
@@ -220,8 +221,7 @@ export default function ViewProgress() {
         try {
             const formData = new FormData();
             formData.append("lessonID", id);
-            const response = await axios.post("https://appssl.educobot.com:8443/EduCobotWS/lessonsWS/getLessonsByID",
-            formData,
+            const response = await axios.post(`${url.EduCobotBaseUrl}/${url.getLessonByID}`,formData,
             {
                 headers: { 'Content-Type': 'multipart/form-data' }
             })
@@ -246,7 +246,7 @@ export default function ViewProgress() {
                 "otp":query.otp,
                 "course":query.course
             }
-            const res = await axios.post("https://api.educobot.com/lessonsRoute/getStudentsProgress", body);
+            const res = await axios.post(`${url.EduCobotBaseUrl}/${url.getStudentsProgress}`, body);
             if(res.data.data.length>0)
             {
                 setStudents(res.data.data)
