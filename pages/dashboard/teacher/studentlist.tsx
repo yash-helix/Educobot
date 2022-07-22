@@ -64,12 +64,12 @@ const url:any = process.env.devUrl;
 
 // console.log("Class Array", [...new Set(classArr)]);
 
-const classArr = ["all", "6th", "7th", "8th", "9th", "10th"];
+const classArr = ["all", "5", "6", "7", "8", "9"];
 
-const divisionArr = ["all", "A", "B", "C", "D", "E"];
+const divisionArr = ["all", "A", "B", "C", "D"];
 
 const TABLE_HEAD = [
-  { id: "fullName", label: "Name", align: "left" },
+  { id: "sdFName", label: "Name", align: "left" },
   { id: "courseLvlLesson", label: "Course,Level,Lesson", align: "left" },
   { id: "points", label: "Points", align: "left" },
   { id: "pendingLessons", label: "Pending Lessons", align: "left" },
@@ -89,10 +89,8 @@ export default function StudentList() {
   const getStudents = async()=>{
     try{
       let formData = new FormData();
-      formData.append("schoolID", "7beec1a9-3a77-467a-8a12-7b1296746b9d");
-      formData.append("year", "2022-23");
-      formData.append("sdClass", "5");
-      formData.append("sdDiv", "A");
+      formData.append("schoolID", localStorage.getItem("schoolID"));
+      // formData.append("year", "2022-23");
 
       await axios.post(`${url.EduCobotBaseUrl}/${url.getStudents}`, formData, {
         headers:{
@@ -158,14 +156,14 @@ export default function StudentList() {
 
   const [tableData, setTableData] = useState([{
     id: "1",
-    fullName: "ABCD",
+    sdFName: "ABCD",
     course: "IC",
     level: 6,
     lesson: 4,
     points: 300,
     pendingLessons: 4,
-    class: "6th",
-    division: "A",
+    sdClass: "6th",
+    sdDiv: "A",
 },]);
 
   const [filterName, setFilterName] = useState("");
@@ -276,8 +274,7 @@ export default function StudentList() {
         <Typography
           variant={"h4"}
           sx={{ color: "text.primary", fontWeight: 700, mb: 4 }}
-        >
-          Students
+        >Students
         </Typography>
 
         <Card>
@@ -303,32 +300,6 @@ export default function StudentList() {
               />
             ))}
           </Tabs>
-
-          {/* <Tabs
-            allowScrollButtonsMobile
-            variant="scrollable"
-            scrollButtons="auto"
-            value={filterStatus}
-            // onChange={onFilterStatus}
-            sx={{ px: 2, bgcolor: "background.neutral" }}
-          >
-            {TABS.map((tab) => (
-              <Tab
-                disableRipple
-                key={tab.value}
-                value={tab.value}
-                label={
-                  <Stack spacing={1} direction="row" alignItems="center">
-                    <div>{tab.label}</div>
-                    <Label color={tab.color}>
-                      {tab.count}
-                      </Label>
-                  </Stack>
-                }
-              />
-            ))}
-          </Tabs> */}
-
           <Divider />
 
           <StudentTableToolbar
@@ -395,7 +366,7 @@ export default function StudentList() {
                         selected={selected.includes(row.id)}
                         onSelectRow={() => onSelectRow(row.id)}
                         onDeleteRow={() => handleDeleteRow(row.id)}
-                        onEditRow={() => handleEditRow(row.fullName)}
+                        onEditRow={() => handleEditRow(row.sdFName)}
                       />
                     ))}
 
@@ -437,14 +408,14 @@ export default function StudentList() {
 
 type row = {
   id: string;
-  fullName: string;
+  sdFName: string;
   course: string;
   level: number;
   lesson: number;
   points: number;
   pendingLessons: number;
-  class: string;
-  division: string;
+  sdClass: string;
+  sdDiv: string;
 };
 
 function applySortFilter({
@@ -475,7 +446,7 @@ function applySortFilter({
   if (filterName) {
     tableData = tableData.filter(
       (item: Record<string, any>) =>
-        item.fullName.toLowerCase().indexOf(filterName.toLowerCase()) !== -1
+        item.sdFName.toLowerCase().indexOf(filterName.toLowerCase()) !== -1
     );
   }
 
@@ -487,13 +458,13 @@ function applySortFilter({
 
   if (filterClass !== "all") {
     tableData = tableData.filter(
-      (item: Record<string, any>) => item.class === filterClass
+      (item: Record<string, any>) => item.sdClass === filterClass
     );
   }
 
   if (filterDivision !== "all") {
     tableData = tableData.filter(
-      (item: Record<string, any>) => item.division === filterDivision
+      (item: Record<string, any>) => item.sdDiv === filterDivision
     );
   }
 

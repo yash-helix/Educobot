@@ -242,7 +242,7 @@ export default function Curriculum2_1() {
         }
     }
     
-    
+
     const getAllLessonData = async () => {
         let body = { courseName: CourseName }
         await axios.post(`${url.EduCobotBaseUrl}/${url.getLessonsByCourse}`, body,
@@ -260,8 +260,8 @@ export default function Curriculum2_1() {
             .catch(err => {
                 console.log(err)
             })
-        }
-        
+    }
+
 
     const mapMasterLessonsByLevels = () => {
         SetLevelArray([]);

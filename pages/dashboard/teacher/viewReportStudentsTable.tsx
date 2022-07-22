@@ -128,16 +128,15 @@ export default function ReportStudentList(props) {
   }
 
   useEffect(() => {
-    // getStudents();
-    const SetData = ()=>{
-        let arr = props.students.map(student=>{
-            if(student?.Completed!=0 || student?.InProgress>0 || student?.NotLogged>0)
-            {
-                return {...student, edStatus:"I"}
-            }
-            else return {student, edStatus:"C"}
-        });
-        setTableData(arr);
+    getStudents();
+    const SetData = () => {
+      let arr = props.students.map(student => {
+        if (student?.edStatus == 'L') return { ...student, edStatus: "I" }
+        else if(student?.edStatus == 'C') return { student, edStatus: "C" }
+        else if(student?.edStatus == 'I') return { student, edStatus: "I" }
+        else return { student, edStatus: "I" }
+      });
+      setTableData(arr);
     }
     SetData();
   }, []);
@@ -226,6 +225,7 @@ export default function ReportStudentList(props) {
     (!dataFiltered.length && !!filterCourse);
 
   const getLengthByStatus = (edStatus: string, edStatus1?:string, edStatus2?:string) =>{
+    console.log(tableData)
     return tableData.filter((obj) => (obj.edStatus == edStatus) || (obj.edStatus == edStatus1) || 
     (obj.edStatus == edStatus2)).length;
   }
@@ -347,7 +347,7 @@ export default function ReportStudentList(props) {
                   {dataFiltered
                     .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                     .map((row) => {
-                        // console.log(row)
+                        console.log(row, "row")
                         const obj = {
                             ...row,
                             edStatus: row?.edStatus,
