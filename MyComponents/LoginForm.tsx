@@ -46,12 +46,12 @@ export default function LoginForm() {
   const isMountedRef = useIsMountedRef();
 
   const [showPassword, setShowPassword] = useState(false);
+  const [errMsg, setErrMsg] = useState("");
 
   const LoginSchema = Yup.object().shape({
-    email: Yup.string().required("Email must be a valid email address"),
-    // .required("Email is required"),
+    email: Yup.string().email("Email must be a valid email address"),
+
     password: Yup.string(),
-    // .required("Password is required"),
   });
 
   const defaultValues = {
@@ -74,6 +74,8 @@ export default function LoginForm() {
 
   const onSubmit = async (data: FormValuesProps, e:any) => {
     try {
+      setOtpError(false);
+      setErrMsg("");
       const { rollno, otp, email, password } = data;
 
       if (rollno && otp) {
@@ -84,30 +86,46 @@ export default function LoginForm() {
           "rollNo": rollno
         }
         const response = await axios.post(`${url.EduCobotBaseUrl}/${url.getUser}`, apibody);
-        if(response.data.token)
-        {
-          const {exp, userID}:any = await jwtDecode(response.data.token)
-          
-          if(Date.now() >= (exp*1000) == false){
+        if (response.data.token) {
+          const { exp, userID }: any = await jwtDecode(response.data.token)
+
+          if (Date.now() >= (exp * 1000) == false) {
             router.push(`/dashboard/student/StudentOTPLogin?id=${userID}&otp=${otp}`)
           }
+          else {
+            setErrMsg("OTP is expired")
+            setOtpError(true);
+          }
         }
-
+        else {
+          setErrMsg("Invalid Roll No. or OTP")
+          setOtpError(true);
+        }
         e.target.reset()
       }
 
       else if (email !== '' && password !== '') {
-        const response = await login(data.email, data.password);
+        const res = await login(data.email, data.password);
+        if(typeof(res) == 'undefined'){
+          setOtpError(true);
+          setErrMsg("Invalid Credentials")
+        }
       }
 
-      else if(!rollno || !otp)
-      {
-        e.target.reset()
+      else {
         setOtpError(true);
+        if(!rollno && !otp){
+          setErrMsg("Roll No. and OTP required")
+        }
+        else{
+          setErrMsg("Email and password is required")
+        }
+        e.target.reset()
       }
     }
-     catch (error: any) {
+    catch (error: any) {
       setOtpError(true);
+      setErrMsg("Invalid Credentials")
       e.target.reset();
 
       if (isMountedRef.current) {
@@ -128,7 +146,7 @@ export default function LoginForm() {
       {
         otpError &&
         <Alert severity="error" sx={{ mb: 2 }}>
-          Invalid Roll no or OTP
+          {errMsg}
         </Alert>
       }
 
@@ -171,7 +189,7 @@ export default function LoginForm() {
           </Alert>
         )} */}
 
-        <RHFTextField name="email" label="Email address" />
+        <RHFTextField name="email" label="Email address"/>
 
         <RHFTextField
           name="password"
